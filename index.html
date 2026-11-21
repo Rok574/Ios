@@ -57,7 +57,7 @@ html,body{
   overflow:hidden;
   overscroll-behavior:none;
   touch-action:manipulation;
-  background:#000;
+  background:#141418;
   color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Roboto,"Helvetica Neue",sans-serif;
 }
@@ -66,7 +66,7 @@ input,select,textarea{-webkit-user-select:text;user-select:text;font-family:inhe
 input[type=file]{-webkit-user-select:auto;user-select:auto;cursor:pointer}
 
 #wall{
-  position:fixed;inset:0;
+  position:fixed;inset:-24px;
   transform:scale(1.04);
   transition:transform .5s cubic-bezier(.2,.8,.2,1);
 }
@@ -131,10 +131,10 @@ input[type=file]{-webkit-user-select:auto;user-select:auto;cursor:pointer}
 .cal b{font-size:calc(var(--is)*.19);color:#ff3b30;letter-spacing:.3px;margin-top:3px;z-index:1}
 .cal i{font-style:normal;font-size:calc(var(--is)*.54);font-weight:300;margin-top:-1px;z-index:1}
 
-.st-dark .icon{filter:brightness(.62) contrast(1.05)}
-.st-tint .icon:not(.fld-ico){background:linear-gradient(#34343a,#16161a)!important}
-.st-tint .icon:not(.fld-ico)>*{filter:grayscale(1) contrast(1.25) brightness(1.3)}
-.st-tint .icon:not(.fld-ico)::after{
+.st-dark .icon:not(.has-full){filter:brightness(.62) contrast(1.05)}
+.st-tint .icon:not(.fld-ico):not(.has-full){background:linear-gradient(#34343a,#16161a)!important}
+.st-tint .icon:not(.fld-ico):not(.has-full)>*{filter:grayscale(1) contrast(1.25) brightness(1.3)}
+.st-tint .icon:not(.fld-ico):not(.has-full)::after{
   content:"";position:absolute;inset:0;
   background:var(--tint);mix-blend-mode:multiply;
   pointer-events:none;z-index:3;
@@ -228,7 +228,7 @@ input[type=file]{-webkit-user-select:auto;user-select:auto;cursor:pointer}
 
 /* App Window & Invisible Bottom Edge Swipe Zone (no visual home bar) */
 #win{
-  position:fixed;display:none;overflow:hidden;z-index:50;
+  position:fixed;inset:0;width:100%;height:100dvh;display:none;overflow:hidden;z-index:50;
   transition:all .46s cubic-bezier(.32,.72,0,1);
 }
 .view{
@@ -288,16 +288,25 @@ input[type=range]{width:55%}
   z-index:10;touch-action:none;
 }
 
-/* Blank Website App Launch Splash */
+/* Full-Screen Website App Launch Splash */
 .blank-app{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:14px;padding:24px;text-align:center;
-  background:var(--sheet);color:var(--ink);
+  position:absolute;inset:0;width:100%;height:100%;overflow:hidden;
+  background:var(--sheet);color:#fff;
 }
-.blank-app .icon{--is:86px}
-.blank-app .bname{font-size:20px;font-weight:600}
-.blank-app .bsub{font-size:14px;color:var(--dim)}
+.blank-app .fs-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:block;
+}
+.blank-app .fs-grad{
+  position:absolute;inset:0;
+}
+.blank-app .fs-status{
+  position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:0 20px;text-align:center;
+  font-size:14px;font-weight:500;color:#fff;
+  text-shadow:0 1px 6px rgba(0,0,0,.65);
+}
 
 .calc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
 .calc button{aspect-ratio:1;border-radius:50%;border:0;font-size:28px;background:#333;color:#fff}
@@ -440,8 +449,7 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
   <div id="lt"></div>
   <div id="ld"></div>
   <div id="su">
-    <svg width="24" height="12" viewBox="0 0 24 12" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-8 9 8"/></svg>
-    <span>Swipe up to unlock</span>
+    <span>Tap to unlock</span>
   </div>
 </div>
 <div id="pad"><div id="pt"></div><div id="pd"><i></i><i></i><i></i><i></i></div><div class="keys" id="keys"></div></div>
@@ -610,6 +618,8 @@ function attachWebIcon(container, a){
     im.onload=()=>{
       if(!container.isConnected)return;
       container.dataset.hasAppStore='1';
+      container.dataset.resolvedIcon=a.icon;
+      container.classList.add('has-full');
       container.innerHTML='';
       container.style.background='#1c1c1e';
       im.className='full-ico';
@@ -659,6 +669,8 @@ function attachWebIcon(container, a){
     im.onload=()=>{
       if(!container.isConnected)return;
       container.dataset.hasAppStore='1';
+      container.dataset.resolvedIcon=artUrl;
+      container.classList.add('has-full');
       container.innerHTML='';
       container.style.background='#1c1c1e';
       im.className='full-ico';
@@ -670,8 +682,9 @@ function attachWebIcon(container, a){
 
 function fillIcon(i,a){
   i.innerHTML='';
-  i.classList.remove('cal','fld-ico');
+  i.classList.remove('cal','fld-ico','has-full');
   delete i.dataset.hasAppStore;
+  delete i.dataset.resolvedIcon;
   i.style.background='';
   if(!a)return;
   if(a.type==='calendar'){
@@ -1096,7 +1109,7 @@ function endDrag(e){
 
 window.addEventListener('pointermove',e=>{
   if(FP||FD)return;
-  if(P&&editing&&!drag&&Math.hypot(e.clientX-P.x,e.clientY-P.y)>6){clearTimeout(lp);startDrag(P.a,e)}
+  if(P&&editing&&!drag&&Math.hypot(e.clientX-P.x,e.clientY-P.y)>12){clearTimeout(lp);startDrag(P.a,e)}
   if(drag)return dragMove(e);
   if(!sw)return;dx=e.clientX-sx;
   if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(e.clientY-sy)){
@@ -1131,10 +1144,10 @@ let lastTouchEnd=0;
 document.addEventListener('touchend',e=>{
   const now=Date.now();
   if(now-lastTouchEnd<=300&&!e.target.closest('input,textarea,select')){
-    e.preventDefault();
+    // Allow normal single-tap click while blocking zoom
   }
   lastTouchEnd=now;
-},{passive:false});
+},{passive:true});
 let LW=innerWidth;
 addEventListener('resize',()=>{if(innerWidth!==LW){LW=innerWidth;render()}});
 
@@ -1228,14 +1241,45 @@ function launch(a,src){
   openRect=r;
   pendingWeb=false;
 
-  // Website apps open as a clean blank app shell first, play the open animation, then call window.open
+  // Website apps open full-screen first, play the open animation, then call window.open
   if(a.type==='url'&&a.url&&!S.proxy){
     v.innerHTML='';
     v.style.cssText='padding:0;overflow:hidden;background:var(--sheet)';
     const splash=el('div','blank-app');
-    const ic=el('div','icon');fillIcon(ic,a);
-    splash.append(ic,el('div','bname',a.name||'Web App'),el('div','bsub','Opening…'));
+    const grad=el('div','fs-grad');
+    grad.style.background=bg(a);
+    splash.appendChild(grad);
+
+    const status=el('div','fs-status');
+    const bsub=el('div',0,'Opening…');
+    status.appendChild(bsub);
+    splash.appendChild(status);
     v.appendChild(splash);
+
+    // Populate full-screen image from custom/saved icon or resolved icon / favicon / App Store artwork
+    const setFsImg=(src)=>{
+      if(!src||!splash.isConnected)return;
+      const im=new Image();
+      im.className='fs-img';
+      im.onload=()=>{
+        if(!splash.isConnected)return;
+        splash.querySelectorAll('.fs-img').forEach(x=>x.remove());
+        splash.insertBefore(im,status);
+      };
+      im.src=src;
+    };
+    const domSlot=document.querySelector(`[data-id="${a.id}"] .icon`);
+    if(a.icon)setFsImg(a.icon);
+    else if(domSlot&&domSlot.dataset.resolvedIcon)setFsImg(domSlot.dataset.resolvedIcon);
+    else{
+      let host='';
+      try{host=new URL(a.url).hostname}catch(e){}
+      if(host){
+        setFsImg(`https://www.google.com/s2/favicons?sz=256&domain=${encodeURIComponent(host)}`);
+        fetchAppStoreArtwork(a.name,host,art=>setFsImg(art));
+      }
+    }
+
     v.scrollTop=0;
     v.classList.remove('show');
 
@@ -1260,13 +1304,13 @@ function launch(a,src){
       const ok=d?openUrl(d):false;
       if(!ok){
         // Fallback if popup was blocked by browser
-        splash.querySelector('.bsub').textContent='Tap below to open';
+        bsub.textContent='Tap below to open';
         const btn=el('button','btn','Open '+a.name);
         btn.style.maxWidth='240px';
         btn.onclick=()=>{if(d)openUrl(d)};
-        splash.appendChild(btn);
+        status.appendChild(btn);
       }else{
-        splash.querySelector('.bsub').textContent='Return here to close';
+        bsub.textContent='Return here to close';
       }
     },460);
     return;
@@ -1705,7 +1749,7 @@ function addSite(){
       const d=url.replace(/^https?:\/\/(www\.)?/i,'').split('/')[0].split('.')[0].replace(/([a-z])([A-Z])/g,'$1 $2')||'Link';
       nm=d[0].toUpperCase()+d.slice(1);
     }
-    const icVal=customData||icIn.value.trim();
+    const icVal=customData||icIn.value.trim()||prevIc.dataset.resolvedIcon||'';
     const a=mk(nm,url,icVal);S.items.push(a);autoPlace(a);page=a.p;save();closeOv();render();
   };
   b.append(prevWrap,n,u,icIn,pickBtn,fi,s,c);
@@ -1812,31 +1856,18 @@ function tryUnlock(){
   askPass('Enter Passcode',async c=>{if((await hash(c))!==S.pass)return false;unlock();return true});
 }
 (function(){
-  const h=$('#home'),W=$('#wall');let y0=0,t0=0,dy=0,on=false;
-  const fx=k=>{h.style.transform=`scale(${1.12-.12*k})`;h.style.filter=`blur(${5*(1-k)}px)`;W.style.transform=`scale(${1.16-.12*k})`};
-  lk.onpointerdown=e=>{
+  let lx=0,ly=0,lMoved=false;
+  lk.addEventListener('pointerdown',e=>{
     if($('#pad').classList.contains('show'))return;
-    on=true;y0=e.clientY;t0=Date.now();dy=0;lk.setPointerCapture(e.pointerId);
-    lk.style.transition=h.style.transition=W.style.transition='none';
-  };
-  lk.onpointermove=e=>{
-    if(!on)return;dy=Math.max(0,y0-e.clientY);
-    lk.style.transform=`translateY(${-dy}px)`;
-    fx(Math.min(1,dy/(innerHeight*.5)));
-  };
-  lk.onpointerup=()=>{
-    if(!on)return;on=false;lk.style.transition=h.style.transition=W.style.transition='';
-    const go=dy>innerHeight*.22||(dy>50&&dy/(Date.now()-t0)>.5);
-    if(go){
-      h.style.transform=h.style.filter=W.style.transform='';tryUnlock();
-      if(S.pass){lk.style.transition='transform .5s cubic-bezier(.3,1.5,.5,1)';lk.style.transform='';setTimeout(()=>lk.style.transition='',520)}
-    }else{
-      h.style.transform=h.style.filter=W.style.transform='';
-      lk.style.transition='transform .55s cubic-bezier(.3,1.6,.5,1)';lk.style.transform='';
-      setTimeout(()=>lk.style.transition='',560);
-    }
-  };
-  lk.onpointercancel=lk.onpointerup;
+    lx=e.clientX;ly=e.clientY;lMoved=false;
+  });
+  lk.addEventListener('pointermove',e=>{
+    if(Math.hypot(e.clientX-lx,e.clientY-ly)>10)lMoved=true;
+  });
+  lk.addEventListener('click',()=>{
+    if($('#pad').classList.contains('show')||lMoved)return;
+    tryUnlock();
+  });
 })();
 
 function tick(){
