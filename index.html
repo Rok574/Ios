@@ -105,6 +105,7 @@ input[type=file]{-webkit-user-select:auto;user-select:auto;cursor:pointer}
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   position:relative;touch-action:none;
 }
+.page>.it{position:absolute!important}
 .page .slot.it{padding-top:0}
 .icon{
   width:var(--is);height:var(--is);
@@ -185,11 +186,12 @@ input[type=file]{-webkit-user-select:auto;user-select:auto;cursor:pointer}
   padding:5px 12px;font-size:12px;font-weight:700;z-index:5;
 }
 .edit .sz{display:block}
-.wb{position:absolute;inset:0;padding:14px;display:flex;flex-direction:column;justify-content:space-between}
-.wh{display:flex;justify-content:space-between;align-items:flex-start}
-.wc{font-weight:600;font-size:15px}
-.wt{font-size:44px;font-weight:300;line-height:1.05}
-.wd{font-size:13px;font-weight:500;line-height:1.3}
+.wb{position:absolute;inset:0;padding:10px 11px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.wh{display:flex;justify-content:space-between;align-items:flex-start;gap:4px;min-width:0}
+.wh>div{min-width:0;flex:1}
+.wc{font-weight:600;font-size:clamp(12px,3.4vw,15px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wt{font-size:clamp(32px,9vw,44px);font-weight:300;line-height:1.05}
+.wd{font-size:12px;font-weight:500;line-height:1.25;overflow:hidden}
 .wdays{display:none;gap:4px;justify-content:space-between}
 .wdays div{display:flex;flex-direction:column;align-items:center;font-size:12px;gap:3px;flex:1}
 .m .wdays{display:flex}.m .wd{display:none}
@@ -504,7 +506,11 @@ const WP=[
   ['Dusk','linear-gradient(180deg,#2b3a67,#6d5a9c 55%,#f0a1a1)'],
   ['Sky','linear-gradient(180deg,#4a90e2,#8ec5fc)'],
   ['Graphite','linear-gradient(180deg,#2c2f36,#0e0f12)'],
-  ['Meadow','linear-gradient(180deg,#134e5e,#71b280)']
+  ['Meadow','linear-gradient(180deg,#134e5e,#71b280)'],
+  ['Aurora','linear-gradient(160deg,#0f2027,#203a43 45%,#2c5364 75%,#00d2ff)'],
+  ['Sunset','linear-gradient(180deg,#2c1654,#b83b5e 52%,#f9a826)'],
+  ['Midnight','linear-gradient(180deg,#090d16,#162238 60%,#1e3a5f)'],
+  ['Ocean','linear-gradient(180deg,#0575e6,#021b79)']
 ];
 const TINTS=['#0a84ff','#ff375f','#30d158','#ff9f0a','#bf5af2','#ffffff'];
 const hue=s=>[...String(s||'app')].reduce((h,c)=>(h*31+c.charCodeAt(0))%360,7);
@@ -532,8 +538,8 @@ try{
 S=Object.assign(DEF(),S||{});
 if(!Array.isArray(S.items))S.items=[sys('safari','Safari',1),sys('settings','Settings',1)];
 
-/* Sanitize any corrupted folder items from prior sessions */
-S.items=S.items.filter(Boolean).map(a=>{
+/* Sanitize corrupted folders; drop removed widgets (notes / countdown / stopwatch) */
+S.items=S.items.filter(Boolean).filter(a=>!(a.type==='widget'&&['notes','countdown','stopwatch'].includes(a.kind))).map(a=>{
   if(a.name&&a.name.trim().toLowerCase()==='settings'&&!a.url){
     a.type='settings';
   }
@@ -552,7 +558,7 @@ S.items.forEach(a=>{
 const save=()=>{try{localStorage.setItem('IOS_HOME3',JSON.stringify(S))}catch(e){}};
 
 let page=0,editing=false,moved=false,lpFired=false,lp=null;
-let openRect=null,pendingWeb=false,webLaunchTime=0,hiddenAt=0,swInt=0,pickId=null,WX=null,WXERR=false;
+let openRect=null,pendingWeb=false,webLaunchTime=0,hiddenAt=0,swInt=0,pickId=null,WX=null,WXERR=false,launchSeq=0;
 
 const bg=a=>`linear-gradient(155deg,hsl(${a.hue??hue(a.name)} 82% 58%),hsl(${((a.hue??hue(a.name))+32)%360} 72% 40%))`;
 const G=(b,s)=>({b,s});
@@ -618,7 +624,7 @@ const ART={
   )
 };
 
-/* App Store + Multi-Source Icon Getter (NO crossOrigin block!) */
+/* App Store + Multi-Source Icon Getter */
 const appStoreArtCache=new Map();
 function fetchAppStoreArtwork(term, host, cb){
   const key=(term||host||'').toLowerCase();
@@ -653,7 +659,6 @@ function fetchAppStoreArtwork(term, host, cb){
 
 function attachWebIcon(container, a){
   if(!a)return;
-  // If user specified a custom icon URL or uploaded image, load it directly
   if(a.icon){
     const im=new Image();
     im.draggable=false;
@@ -675,7 +680,6 @@ function attachWebIcon(container, a){
   try{host=new URL(a.url).hostname}catch(e){return}
   if(!host)return;
 
-  // Step 1: Load crisp favicon / apple-touch-icon immediately WITHOUT crossOrigin restriction
   const sources=[
     `https://www.google.com/s2/favicons?sz=256&domain=${encodeURIComponent(host)}`,
     `https://icons.duckduckgo.com/ip3/${encodeURIComponent(host)}.ico`,
@@ -703,7 +707,6 @@ function attachWebIcon(container, a){
   };
   tryFav();
 
-  // Step 2: Automatically upgrade to real App Store 512/256px full-bleed rounded icon if matching app exists
   fetchAppStoreArtwork(a.name, host, artUrl=>{
     if(!container.isConnected)return;
     const im=new Image();
@@ -851,8 +854,12 @@ function fits(a,p,c,r){
   });
 }
 
-function autoPlace(a){
-  for(let p=0;p<60;p++)
+function autoPlace(a,from){
+  for(let p=from||0;p<60;p++)
+    for(let r=0;r<M.rows;r++)
+      for(let c=0;c<4;c++)
+        if(fits(a,p,c,r)){a.p=p;a.c=c;a.r=r;return}
+  for(let p=0;p<(from||0);p++)
     for(let r=0;r<M.rows;r++)
       for(let c=0;c<4;c++)
         if(fits(a,p,c,r)){a.p=p;a.c=c;a.r=r;return}
@@ -877,7 +884,7 @@ function render(){
   let ch=0;
   S.items.forEach(a=>{
     if(a&&!a.dock&&(a.p==null||a.c==null||a.r==null||!fits(a,a.p,a.c,a.r))){
-      autoPlace(a);ch=1;
+      autoPlace(a,a.p||0);ch=1;
     }
   });
   if(ch)save();
@@ -917,7 +924,7 @@ function render(){
     }
   }
 
-  t.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';
+  t.style.transition='transform .45s cubic-bezier(.22,1,.36,1)';
   t.style.transform=`translateX(${-page*100}%)`;
   setWall();
 
@@ -926,6 +933,9 @@ function render(){
   h.classList.toggle('nolabels',!S.labels||S.big);
   h.classList.toggle('st-dark',S.style==='dark');
   h.classList.toggle('st-tint',S.style==='tint');
+  /* style classes on body too, so icons outside #home (folder, search popup, dialogs) match */
+  document.body.classList.toggle('st-dark',S.style==='dark');
+  document.body.classList.toggle('st-tint',S.style==='tint');
   h.dataset.n=n+lib;
   h.classList.toggle('inlib',!!lib&&page>=n);
   document.documentElement.style.setProperty('--tint',S.tint||'#0a84ff');
@@ -933,10 +943,54 @@ function render(){
 
 const setEdit=v=>{editing=v;if(!v&&$('#cs'))$('#cs').style.display='none';render()};
 $('#doneb').onclick=()=>setEdit(false);
+$('#spill').innerHTML='<svg viewBox="0 0 24 24" width="13" height="13"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Search</span>';
 $('#spill').onclick=()=>{
   if(editing)return;
-  const saf=S.items.find(a=>a.type==='safari')||sys('safari','Safari',false);
-  launch(saf,$('#spill'));
+  const b=$('#ob');b.innerHTML='';
+  b.appendChild(el('h3',0,'Quick Search & Apps'));
+  const qi=el('input');qi.type='text';qi.placeholder='Search apps or enter URL / query…';
+  qi.setAttribute('inputmode','search');qi.autocomplete='off';
+  const res=el('div');res.style.cssText='display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-top:4px';
+  const apps=allApps();
+  const renderRes=()=>{
+    res.innerHTML='';
+    const qv=qi.value.trim().toLowerCase();
+    const matches=apps.filter(x=>!qv||x.a.name.toLowerCase().includes(qv)||(x.a.url&&x.a.url.toLowerCase().includes(qv))).slice(0,6);
+    matches.forEach(({a})=>{
+      const row=el('button','btn gray');
+      row.style.cssText='margin-top:0;padding:10px 12px;font-size:15px;display:flex;align-items:center;gap:10px;text-align:left';
+      const ic=el('div','icon');ic.style.cssText='--is:30px;flex:none';fillIcon(ic,a);
+      row.append(ic,el('span',0,a.name));
+      row.onclick=()=>{closeOv();launch(a,$('#spill'))};
+      res.appendChild(row);
+    });
+    if(qv){
+      const webRow=el('button','btn');
+      webRow.style.cssText='margin-top:4px;padding:11px 14px;font-size:15px';
+      webRow.textContent='Search / Open "'+qi.value.trim()+'"';
+      webRow.onclick=()=>{
+        const queryVal=qi.value.trim();
+        closeOv();
+        const saf=S.items.find(a=>a.type==='safari')||sys('safari','Safari',false);
+        launch({...saf,url:queryVal},$('#spill'));
+      };
+      res.appendChild(webRow);
+    }
+  };
+  qi.oninput=renderRes;
+  qi.onkeydown=e=>{
+    if(e.key==='Enter'&&qi.value.trim()){
+      const queryVal=qi.value.trim();
+      closeOv();
+      const saf=S.items.find(a=>a.type==='safari')||sys('safari','Safari',false);
+      launch({...saf,url:queryVal},$('#spill'));
+    }
+  };
+  const c=el('button','btn gray','Cancel');c.style.marginTop='4px';c.onclick=closeOv;
+  b.append(qi,res,c);
+  $('#ov').style.display='flex';
+  renderRes();
+  setTimeout(()=>qi.focus(),50);
 };
 
 let P=null,drag=null,edgeT=0,sx=0,sy=0,sw=false,dx=0,justDroppedAt=0;
@@ -996,7 +1050,7 @@ function slot(a,abs){
   return s;
 }
 
-/* Weather widget */
+/* Weather */
 const wc=c=>c<1?['Clear','sun']:c<3?['Partly Cloudy','sun']:c<4?['Cloudy','cloud']:c<50?['Fog','cloud']:c<68?['Rain','rain']:c<78?['Snow','rain']:c<83?['Showers','rain']:c<87?['Snow','rain']:['Thunderstorms','rain'];
 const CL='<path d="M7 17a4 4 0 010-8 5.5 5.5 0 0110.6 1.2A3.4 3.4 0 0117 17z" fill="#fff"/>';
 const wsvg=(k,s)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}">`+(k==='sun'?'<circle cx="12" cy="12" r="5" fill="#ffd60a"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="#ffd60a" stroke-width="2" stroke-linecap="round"/>':k==='cloud'?CL:CL+'<path d="M9 19l-1 3M13 19l-1 3M17 19l-1 3" stroke="#7fc8ff" stroke-width="2" stroke-linecap="round"/>')+'</svg>';
@@ -1004,7 +1058,7 @@ const WBG={sun:'linear-gradient(#3d86e0,#7bb8f0)',cloud:'linear-gradient(#5f6f86
 
 function fillWx(w){
   const b=w.querySelector('.wb');
-  if(!WX){w.style.background=WBG.cloud;b.innerHTML=`<div class="wc">Weather</div><div class="wd">${WXERR?'Unavailable here':'Loading…'}</div>`;return}
+  if(!WX){w.style.background=WBG.cloud;b.innerHTML=`<div class="wc">Weather</div><div class="wd">${WXERR?'Tap to retry':'Loading…'}</div>`;return}
   const [cond,k]=wc(WX.c),d=WX.days;
   w.style.background=WBG[k];
   b.innerHTML=`<div class="wh"><div><div class="wc">${esc(WX.name)}</div><div class="wt">${WX.t}°</div></div>${wsvg(k,34)}</div><div class="wd">${cond}<br>H:${d[0].hi}° L:${d[0].lo}°</div><div class="wdays">${d.slice(0,5).map(x=>`<div><span>${x.d}</span>${wsvg(wc(x.c)[1],22)}<span>${x.hi}° ${x.lo}°</span></div>`).join('')}</div>`;
@@ -1013,68 +1067,133 @@ const paintWx=()=>document.querySelectorAll('.w.wx').forEach(fillWx);
 
 async function loadWx(force){
   try{
-    const key=(S.city||'@')+(S.f?'F':'C'),c=JSON.parse(localStorage.getItem('IOS_WX')||'null');
-    if(!force&&c&&c.key===key&&Date.now()-c.t<1.2e6){WX=c.d;return paintWx()}
+    const key=(S.city||'@')+(S.f?'F':'C');let c=null;
+    try{c=JSON.parse(localStorage.getItem('IOS_WX')||'null')}catch(e){}
+    if(!force&&c&&c.key===key&&Date.now()-c.t<1.2e6){WX=c.d;WXERR=false;return paintWx()}
     let lat,lon,name;
     if(S.city){
       const g=await(await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent(S.city))).json();
       const r=g.results[0];lat=r.latitude;lon=r.longitude;name=r.name;
     }else{
-      const p=await new Promise((ok,no)=>navigator.geolocation.getCurrentPosition(ok,no,{timeout:9000}));
-      lat=p.coords.latitude;lon=p.coords.longitude;name='My Location';
+      try{
+        const p=await new Promise((ok,no)=>navigator.geolocation.getCurrentPosition(ok,no,{timeout:6000,maximumAge:6e5}));
+        lat=p.coords.latitude;lon=p.coords.longitude;name='My Location';
+      }catch(e){
+        const ip=await(await fetch('https://ipapi.co/json/')).json();
+        if(!ip.latitude)throw 0;
+        lat=ip.latitude;lon=ip.longitude;name=ip.city||'My Location';
+      }
     }
     const j=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&temperature_unit=${S.f?'fahrenheit':'celsius'}`)).json();
     WX={name,t:Math.round(j.current.temperature_2m),c:j.current.weather_code,days:j.daily.time.map((d,i)=>({d:new Date(d+'T12:00').toLocaleDateString([],{weekday:'short'}),c:j.daily.weather_code[i],hi:Math.round(j.daily.temperature_2m_max[i]),lo:Math.round(j.daily.temperature_2m_min[i])}))};
     WXERR=false;
     try{localStorage.setItem('IOS_WX',JSON.stringify({key,t:Date.now(),d:WX}))}catch(e){}
-  }catch(e){WX=null;WXERR=true}
+  }catch(e){if(!WX)WXERR=true}
   paintWx();
 }
 
+/* Widgets: weather, clock, calendar, search, photo */
+const XT=d=>d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',hour12:!S.h24}).replace(/\s?[AP]M/i,'');
+const XS={search:'sm'};
+const nextSz=a=>{const al=XS[a.kind]||'sml',i=al.indexOf(a.size||'s');return al[(i+1)%al.length]};
+const MAG='<svg viewBox="0 0 24 24" width="SZ" height="SZ"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+function xAn(){
+  const d=new Date(),h=d.getHours()%12+d.getMinutes()/60,m=d.getMinutes()+d.getSeconds()/60,s=d.getSeconds();
+  let t='';for(let i=0;i<12;i++)t+=`<line x1="50" y1="${i%3?8:6}" x2="50" y2="${i%3?11:13}" transform="rotate(${i*30} 50 50)" stroke="#fff" stroke-width="${i%3?1.2:2}" opacity=".85"/>`;
+  return `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="rgba(0,0,0,.35)"/>${t}<line x1="50" y1="50" x2="50" y2="27" transform="rotate(${h*30} 50 50)" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><line x1="50" y1="50" x2="50" y2="15" transform="rotate(${m*6} 50 50)" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><line x1="50" y1="58" x2="50" y2="12" transform="rotate(${s*6} 50 50)" stroke="#ff9f0a" stroke-width="1.2" stroke-linecap="round"/><circle cx="50" cy="50" r="2.6" fill="#ff9f0a"/></svg>`;
+}
+function xGrid(d){
+  const y=d.getFullYear(),m=d.getMonth(),f=new Date(y,m,1).getDay(),n=new Date(y,m+1,0).getDate();
+  let h='<div class="xg7">'+'SMTWTFS'.split('').map(x=>`<i class="xh">${x}</i>`).join('');
+  for(let i=0;i<f;i++)h+='<i></i>';
+  for(let i=1;i<=n;i++)h+=`<i${i===d.getDate()?' class="xtd"':''}>${i}</i>`;
+  return h+'</div>';
+}
+function xPaint(a,w){
+  const b=w.querySelector('.wb');if(!b)return;
+  const k=a.kind,s=a.size||'s',d=new Date();
+  const dow=d.toLocaleDateString([],{weekday:'long'}),mon=d.toLocaleDateString([],{month:'long'});
+  let h='';
+  if(k==='weather'){fillWx(w);return}
+  if(k==='photo'){
+    if(PH[a.id]){w.style.background=`url(${PH[a.id]}) center/cover`;b.innerHTML=''}
+    else b.innerHTML='<div class="pht">Hold, then tap to add a photo</div>';
+    return;
+  }
+  if(k==='clock'){
+    const an=`<div class="xf">${xAn()}</div>`;
+    h=s==='s'?an:s==='m'
+      ?`<div class="xr2"><div><div class="xtime">${XT(d)}</div><div class="xsub">${dow}<br>${mon} ${d.getDate()}</div></div>${an}</div>`
+      :`${an}<div class="xtime xc">${XT(d)}</div><div class="xsub xc">${dow}, ${mon} ${d.getDate()}</div>`;
+  }else if(k==='calendar'){
+    h=s==='s'?`<div class="xdow">${dow}</div><div class="xmid"><div class="xbig">${d.getDate()}</div></div><div class="xsub">${mon} ${d.getFullYear()}</div>`
+     :s==='m'?`<div class="xr2"><div><div class="xdow">${dow}</div><div class="xbig">${d.getDate()}</div><div class="xsub">${mon}</div></div><div class="xgw">${xGrid(d)}</div></div>`
+     :`<div class="xdow">${mon} ${d.getFullYear()}</div><div class="xgw l">${xGrid(d)}</div>`;
+  }else if(k==='search'){
+    h=s==='s'?`<div class="xmid" style="align-items:center">${MAG.replace(/SZ/g,34)}<div class="xsub">Search</div></div>`
+      :`<div class="xmid"><div class="xbar">${MAG.replace(/SZ/g,16)}<span>Search the web</span></div></div>`;
+  }else h='<div class="pht">Widget</div>';
+  b.innerHTML=h;
+}
+const xAll=()=>document.querySelectorAll('.w.xw').forEach(w=>{const a=S.items.find(x=>x.id===w.dataset.id);if(a)xPaint(a,w)});
+function xTap(a,w){
+  switch(a.kind){
+    case'weather':WXERR=false;paintWx();loadWx(true);break;
+    case'clock':launch(sys('clock','Clock'),w);break;
+    case'calendar':launch(sys('calendar','Calendar'),w);break;
+    case'search':$('#spill').click();break;
+  }
+}
 function widget(a){
-  const w=el('div','w '+(a.size||'s')+' '+(a.kind==='weather'?'wx':'ph')),b=el('div','wb');
-  w.appendChild(b);
-  if(a.kind==='weather')fillWx(w);
-  else if(PH[a.id])w.style.background=`url(${PH[a.id]}) center/cover`;
-  else b.innerHTML='<div class="pht">Hold, then tap to add a photo</div>';
-
-  const d=el('button','del ok','−');
-  d.onclick=e=>{e.stopPropagation();rm(a)};
-  const z=el('button','sz',(a.size||'s').toUpperCase());
+  const sz=a.size||'s',k=a.kind||'weather';
+  const w=el('div','w xw '+sz+(k==='weather'?' wx':'')+' k-'+k),b=el('div','wb');
+  w.dataset.k=k;w.appendChild(b);xPaint(a,w);
+  const d=el('button','del ok','−');d.onclick=e=>{e.stopPropagation();rm(a)};
+  const z=el('button','sz',sz.toUpperCase());
   z.onclick=e=>{
     e.stopPropagation();
-    a.size={s:'m',m:'l',l:'s'}[a.size||'s'];
-    if(!fits(a,a.p,a.c,a.r))autoPlace(a);
+    a.size=nextSz(a);const [nw,nh]=SZ[a.size];
+    a.c=Math.min(a.c,4-nw);a.r=Math.min(a.r,Math.max(0,M.rows-nh));
+    grid().filter(x=>x!==a&&x.p===a.p&&x.type!=='widget'&&x.c<a.c+nw&&x.c+1>a.c&&x.r<a.r+nh&&x.r+1>a.r).sort((m,n)=>(m.r-n.r)||(m.c-n.c)).forEach(x=>autoPlace(x,a.p));
+    if(!fits(a,a.p,a.c,a.r))autoPlace(a,a.p);
     page=a.p;save();render();
   };
   w.append(d,z);
-  const [gw,gh]=SZ[a.size||'s'];
+  const [gw,gh]=SZ[sz];
   w.classList.add('it');
   Object.assign(w.style,{
-    left:M.pad+a.c*M.cw+(M.cw-M.is)/2+'px',
-    top:a.r*M.rh+'px',
-    width:gw*M.cw-(M.cw-M.is)+'px',
-    height:gh*M.rh-(M.rh-M.is)+'px'
+    left:M.pad+a.c*M.cw+(M.cw-M.is)/2+'px',top:a.r*M.rh+'px',
+    width:gw*M.cw-(M.cw-M.is)+'px',height:gh*M.rh-(M.rh-M.is)+'px'
   });
-  if(a.kind==='photo'){
+  if(k==='photo'){
     const fi=el('input','fi');fi.type='file';fi.accept='image/*';
     fi.onclick=e=>{if(moved||lpFired)e.preventDefault()};
-    fi.onchange=e=>shrink(e,1000,d=>{
-      PH[a.id]=d;
-      try{localStorage.setItem('IOS_PW_'+a.id,d)}catch(x){}
-      render();
-    });
+    fi.onchange=e=>shrink(e,1000,u=>{PH[a.id]=u;try{localStorage.setItem('IOS_PW_'+a.id,u)}catch(x){}render()});
     w.appendChild(fi);
   }
-  bindTap(w,()=>{},a);
+  bindTap(w,()=>xTap(a,w),a);
   return w;
 }
+setInterval(()=>{
+  if(document.hidden)return;
+  document.querySelectorAll('.w.xw').forEach(w=>{
+    const k=w.dataset.k;if(k!=='clock'&&k!=='calendar')return;
+    const a=S.items.find(x=>x.id===w.dataset.id);if(!a)return;
+    const t=Math.floor(Date.now()/(k==='clock'?1000:60000));if(w._s===t)return;w._s=t;
+    xPaint(a,w);
+  });
+},250);
 
-/* Grid & Dock Dragging (isolated from folder dragging) */
+/* Grid & Dock Dragging */
 $('#pv').addEventListener('pointerdown',e=>{
   if(FP||FD)return;
   if(editing&&e.target.closest('.it'))return;
   sx=e.clientX;sy=e.clientY;sw=true;dx=0;moved=false;
+});
+/* long-press empty space to edit */
+$('#pv').addEventListener('pointerdown',e=>{
+  if(editing||e.target.closest('.it,.lib'))return;
+  clearTimeout(lp);lp=setTimeout(()=>{if(!moved&&!editing)setEdit(true)},550);
 });
 
 function startDrag(a,e){
@@ -1108,6 +1227,7 @@ function dragMove(e){
 
 function endDrag(e){
   const d=drag,a=d.a;
+  const gr=d.g.getBoundingClientRect();
   drag=null;clearTimeout(edgeT);edgeT=0;d.g.remove();
   document.querySelectorAll('.tgt').forEach(n=>n.classList.remove('tgt'));
   justDroppedAt=Date.now();
@@ -1141,25 +1261,58 @@ function endDrag(e){
     const wi=a.type==='widget',[w,h]=dm(a);
     const gl=cx-d.ox-pv.left-M.pad-(wi?(M.cw-M.is)/2:0);
     const gt=cy-d.oy-pv.top;
-    const c=Math.max(0,Math.min(4-w,wi?Math.floor((gl+M.cw*.35)/M.cw):Math.round(gl/M.cw)));
-    const r=Math.max(0,Math.min(M.rows-h,wi?Math.floor((gt+M.rh*.35)/M.rh):Math.round(gt/M.rh)));
+    const c=Math.max(0,Math.min(4-w,Math.round(gl/M.cw)));
+    const r=Math.max(0,Math.min(M.rows-h,Math.round(gt/M.rh)));
     const prevP=a.p,prevC=a.c,prevR=a.r,was=a.dock;
     a.dock=false;
-    if(fits(a,page,c,r)){a.p=page;a.c=c;a.r=r}
-    else{
-      let placed=false;
-      for(let dr=0;dr<=M.rows-h&&!placed;dr++){
-        for(let dc=0;dc<=4-w&&!placed;dc++){
-          if(fits(a,page,dc,dr)){a.p=page;a.c=dc;a.r=dr;placed=true}
+    const nearest=()=>{
+      let best=null,bestD=1e9;
+      for(let dr=0;dr<=M.rows-h;dr++){
+        for(let dc=0;dc<=4-w;dc++){
+          if(fits(a,page,dc,dr)){
+            const dist=Math.hypot(dc-c,dr-r);
+            if(dist<bestD){bestD=dist;best={dc,dr}}
+          }
         }
       }
-      if(!placed){
-        if(was||prevP!==page)autoPlace(a);
-        else{a.p=prevP;a.c=prevC;a.r=prevR}
+      if(best){a.p=page;a.c=best.dc;a.r=best.dr}
+      else if(was||prevP!==page)autoPlace(a);
+      else{a.p=prevP;a.c=prevC;a.r=prevR}
+    };
+    if(wi){
+      /* can only take this spot if no other widget is in the way */
+      const blocked=grid().some(b=>{
+        if(b===a||b.p!==page||b.type!=='widget')return false;
+        const [bw,bh]=dm(b);
+        return c<b.c+bw&&b.c<c+w&&r<b.r+bh&&b.r<r+h;
+      });
+      if(blocked)nearest();
+      else{
+        a.p=page;a.c=c;a.r=r;
+        const dis=grid().filter(b=>b!==a&&b.p===page&&b.type!=='widget'&&b.c<c+w&&b.c+1>c&&b.r<r+h&&b.r+1>r);
+        dis.sort((m,n)=>(m.r-n.r)||(m.c-n.c)).forEach(b=>{
+          /* push displaced icons to the nearest free cell on this page, else flow to following pages */
+          let best=null,bd=1e9;
+          for(let rr=0;rr<M.rows;rr++)for(let cc=0;cc<4;cc++){
+            if(!fits(b,page,cc,rr))continue;
+            const dist=Math.hypot(cc-b.c,rr-b.r);
+            if(dist<bd){bd=dist;best={cc,rr}}
+          }
+          if(best){b.p=page;b.c=best.cc;b.r=best.rr}else autoPlace(b,page+1);
+        });
+        if(!fits(a,a.p,a.c,a.r))nearest();
       }
-    }
+    }else if(fits(a,page,c,r)){a.p=page;a.c=c;a.r=r}
+    else nearest();
   }
   save();render();
+  /* glide the dropped item into place */
+  const n=document.querySelector(`[data-id="${a.id}"]`);
+  if(n){
+    const r=n.getBoundingClientRect();
+    const mx=gr.left+gr.width/2-(r.left+r.width/2),my=gr.top+gr.height/2-(r.top+r.height/2);
+    if(Math.abs(mx)+Math.abs(my)>=3)n.animate([{transform:`translate(${mx}px,${my}px) scale(1.1)`},{transform:'translate(0,0) scale(1)'}],{duration:340,easing:'cubic-bezier(.2,.9,.25,1)'});
+  }
 }
 
 window.addEventListener('pointermove',e=>{
@@ -1195,28 +1348,37 @@ window.addEventListener('pointercancel',()=>{
 document.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
-let lastTouchEnd=0;
-document.addEventListener('touchend',e=>{
-  const now=Date.now();
-  if(now-lastTouchEnd<=300&&!e.target.closest('input,textarea,select')){
-    // Allow normal single-tap click while blocking zoom
-  }
-  lastTouchEnd=now;
-},{passive:true});
 let LW=innerWidth;
 addEventListener('resize',()=>{if(innerWidth!==LW){LW=innerWidth;render()}});
 
-/* Folders (isolated state, smooth drag-out & unwrap) */
+/* Folders */
 let FP=null,FD=null,fOpen=null,FDT=0;
+const foOrigin=f=>{
+  const ic=f&&document.querySelector(`[data-id="${f.id}"] .icon`),p=$('#fp');
+  if(!ic||!p)return;
+  const r=ic.getBoundingClientRect(),pr=p.getBoundingClientRect();
+  p.style.transformOrigin=`${r.left+r.width/2-pr.left}px ${r.top+r.height/2-pr.top}px`;
+};
+function closeFo(){
+  const o=$('#fo'),p=$('#fp');if(!o||o.dataset.c)return;
+  o.dataset.c='1';foOrigin(fOpen);
+  p.style.animation='xfout .24s cubic-bezier(.4,0,1,1) forwards';
+  o.style.transition='opacity .24s';o.style.opacity='0';
+  setTimeout(()=>{
+    o.style.display='none';o.style.opacity='';o.style.transition='';p.style.animation='';
+    delete o.dataset.c;fOpen=null;render();
+  },250);
+}
 function openFolder(f){
   if(!f||!Array.isArray(f.items))return;
   let o=$('#fo');
+  const was=!!o&&o.style.display==='flex';
   if(!o){
     o=el('div');o.id='fo';
     o.innerHTML='<input type="text" id="fn"><div id="fp"></div>';
     document.body.appendChild(o);
-    o.onclick=e=>{if(e.target===o){o.style.display='none';fOpen=null;render()}};
   }
+  o.onclick=e=>{if(e.target===o)closeFo()};
   fOpen=f;
   const n=$('#fn');n.value=f.name||'Folder';n.readOnly=!editing;
   n.onchange=()=>{f.name=n.value.trim()||'Folder';save();render()};
@@ -1238,6 +1400,11 @@ function openFolder(f){
     p.appendChild(sl);
   });
   o.style.display='flex';
+  if(!was){
+    delete o.dataset.c;o.style.opacity='';
+    foOrigin(f);
+    p.style.animation='none';p.offsetWidth;p.style.animation='';
+  }
 }
 
 window.addEventListener('pointermove',e=>{
@@ -1281,7 +1448,7 @@ window.addEventListener('pointerup',e=>{
   save();render();
 });
 
-/* App Launch Animation -> window.open -> Auto Close Animation on Return */
+/* App Launch Animation */
 let webWasHidden=false;
 function openUrl(u){
   let winRef=null;
@@ -1292,7 +1459,6 @@ function openUrl(u){
   if(winRef){
     try{winRef.opener=null}catch(e){}
   }
-  // Track return even if browser returns a non-null or null handle on mobile/PWA
   pendingWeb=true;
   webWasHidden=false;
   webLaunchTime=Date.now();
@@ -1300,13 +1466,21 @@ function openUrl(u){
 }
 
 function launch(a,src){
-  const r=src&&src.getBoundingClientRect?src.getBoundingClientRect():{left:innerWidth/2-32,top:innerHeight/2-32,width:64,height:64};
+  const seq=++launchSeq;
+  /* wide / offscreen sources (search pill, wide widgets, folders on other pages) animate from a clean square */
+  let r=src&&src.getBoundingClientRect?src.getBoundingClientRect():null;
+  const bad=!r||!r.width||r.right<0||r.left>innerWidth||r.bottom<0||r.top>innerHeight;
+  const asp=r?r.width/Math.max(1,r.height):1;
+  if(bad||asp>1.35||asp<.74){
+    const cx=bad?innerWidth/2:r.left+r.width/2,cy=bad?innerHeight/2:r.top+r.height/2;
+    const q=bad?64:Math.max(56,Math.min(r.width,r.height,76));
+    r={left:cx-q/2,top:cy-q/2,width:q,height:q};
+  }
   const w=$('#win'),v=$('#view');
   openRect=r;
   pendingWeb=false;
   webWasHidden=false;
 
-  // Website apps open full-screen first, play the open animation, then call window.open (never for built-in Settings)
   if(a.type==='url'&&a.url&&!S.proxy&&a.type!=='settings'){
     w.classList.remove('sys-open');
     v.innerHTML='';
@@ -1322,7 +1496,6 @@ function launch(a,src){
     splash.appendChild(status);
     v.appendChild(splash);
 
-    // Populate full-screen image from custom/saved icon or resolved icon / favicon / App Store artwork
     const setFsImg=(src)=>{
       if(!src||!splash.isConnected)return;
       const im=new Image();
@@ -1363,9 +1536,8 @@ function launch(a,src){
     $('#wall').classList.add('opn');
     setTimeout(()=>v.classList.add('show'),120);
 
-    // Wait until app open animation completes, then open via window.open
     setTimeout(()=>{
-      if(w.style.display!=='block')return;
+      if(seq!==launchSeq||w.style.display!=='block')return;
       const d=dest(a.url);
       if(d){
         openUrl(d);
@@ -1380,7 +1552,6 @@ function launch(a,src){
     return;
   }
 
-  // Built-in system apps & Safari
   w.classList.add('sys-open');
   buildView(a,v);
   v.scrollTop=0;
@@ -1401,6 +1572,7 @@ function launch(a,src){
 }
 
 function closeApp(){
+  launchSeq++;
   const w=$('#win');
   if(w.style.display!=='block')return;
   w.classList.remove('sys-open');
@@ -1422,9 +1594,10 @@ function closeApp(){
       $('#view').innerHTML='';
     }
   },430);
+  setTimeout(xAll,480);
 }
 
-/* Bottom Home button tap & swipe-up gesture to close any open app */
+/* Bottom Home button tap & swipe-up gesture */
 (function(){
   const b=$('#bar'),w=$('#win');let y0=0,on=false,movedY=false;
   b.onpointerdown=e=>{y0=e.clientY;on=true;movedY=false;b.setPointerCapture(e.pointerId);w.style.transition='none'};
@@ -1453,7 +1626,6 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* Automatically trigger the app close animation when returning from window.open */
 function backFromWeb(){
   if(document.visibilityState==='hidden'){
     hiddenAt=Date.now();
@@ -1674,7 +1846,7 @@ function settingsView(v){
   });
   sel.value=S.engine;sel.onchange=()=>{S.engine=sel.value;save()};
   r1.appendChild(sel);c2.appendChild(r1);
-  tog(c2,'24-hour clock','h24',tick);
+  tog(c2,'24-hour clock','h24',()=>{tick();xAll()});
   tog(c2,'App Library','lib',render);
   tog(c2,'Large icons (hides names)','big',render);
   tog(c2,'Show app names','labels',render);
@@ -1712,6 +1884,7 @@ function settingsView(v){
 
 function shrink(e,max,cb){
   const f=e.target.files[0];if(!f)return;
+  max=Math.min(max,max>=1500?1280:800);
   const im=new Image(),u=URL.createObjectURL(f);
   im.onload=()=>{
     const k=Math.min(1,max/Math.max(im.width,im.height));
@@ -1736,14 +1909,31 @@ $('#pfile').onchange=e=>shrink(e,1000,d=>{
 });
 
 const closeOv=()=>{$('#ov').style.display='none'};
+const XW=[
+  ['Weather','weather','m','linear-gradient(160deg,#3d86e0,#7bb8f0)'],
+  ['Clock','clock','s','linear-gradient(160deg,#2c2c30,#111)'],
+  ['Calendar','calendar','m','linear-gradient(160deg,#ff6b5e,#ff3b30)'],
+  ['Search','search','m','linear-gradient(160deg,#636366,#2c2c2e)'],
+  ['Photo','photo','s','linear-gradient(160deg,#30d158,#0a8f3a)']
+];
+function addW(k,s){
+  const a=wd(k,s);S.items.push(a);autoPlace(a);page=a.p;save();closeOv();render();
+  if(k==='weather')loadWx();
+}
 function addMenu(){
   const b=$('#ob');b.innerHTML='';b.appendChild(el('h3',0,'Add to Home Screen'));
-  [['Add to iPhone Home Screen',installMenu],['Website App',addSite],['Weather Widget',()=>addW('weather','m')],['Photo Widget',()=>addW('photo','s')],['Cancel',closeOv]].forEach(([t,f],idx)=>{
-    const x=el('button','btn'+(idx==4?' gray':''),t);x.style.marginTop='4px';x.onclick=f;b.appendChild(x);
+  const g=el('div','xg');
+  XW.forEach(([n,k,s,bgc])=>{
+    const t=el('button','xt2');t.style.background=bgc;
+    t.append(el('b',0,n),el('span',0,s==='s'?'Small':'Wide'));
+    t.onclick=()=>addW(k,s);g.appendChild(t);
+  });
+  b.appendChild(g);
+  [['Website App',addSite],['Add to iPhone Home Screen',installMenu],['Cancel',closeOv]].forEach(([t,f])=>{
+    const x=el('button','btn gray',t);x.style.marginTop='0';x.onclick=f;b.appendChild(x);
   });
   $('#ov').style.display='flex';
 }
-function addW(k,s){const a=wd(k,s);S.items.push(a);autoPlace(a);page=a.p;save();closeOv();render();if(k==='weather')loadWx()}
 function dataMenu(){
   const b=$('#ob');b.innerHTML='';b.appendChild(el('h3',0,'Backup & Restore'));
   const t=document.createElement('textarea');t.style.cssText='height:130px;font-size:12px;width:100%';
@@ -1775,6 +1965,15 @@ function installMenu(){
 
 function addSite(){
   const b=$('#ob');b.innerHTML='';b.appendChild(el('h3',0,'Add Website'));
+  const presets=[
+    ['Roblox','https://www.roblox.com'],
+    ['YouTube','https://www.youtube.com'],
+    ['Discord','https://discord.com/app'],
+    ['GitHub','https://github.com'],
+    ['Wikipedia','https://www.wikipedia.org'],
+    ['Spotify','https://open.spotify.com']
+  ];
+  const pBar=el('div');pBar.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px';
   const prevWrap=el('div');prevWrap.style.cssText='display:flex;align-items:center;gap:12px;margin:4px 0 6px';
   const prevIc=el('div','icon');prevIc.style.cssText='--is:56px;flex:none';
   const prevLbl=el('div');prevLbl.style.cssText='font-size:13px;color:var(--dim);line-height:1.35';
@@ -1821,7 +2020,17 @@ function addSite(){
     const icVal=customData||icIn.value.trim()||prevIc.dataset.resolvedIcon||'';
     const a=mk(nm,url,icVal);S.items.push(a);autoPlace(a);page=a.p;save();closeOv();render();
   };
-  b.append(prevWrap,n,u,icIn,pickBtn,fi,s,c);
+  presets.forEach(([pName,pUrl])=>{
+    const chip=el('button',0,pName);
+    chip.type='button';
+    chip.style.cssText='border:0;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:600;background:var(--field);color:var(--ink)';
+    chip.onclick=()=>{
+      n.value=pName;u.value=pUrl;customData='';icIn.value='';
+      updPrev();
+    };
+    pBar.appendChild(chip);
+  });
+  b.append(pBar,prevWrap,n,u,icIn,pickBtn,fi,s,c);
 }
 
 $('#addb').onclick=addMenu;
@@ -2003,8 +2212,56 @@ setInterval(tick,10000);
 })();
 
 tick();render();
-if(S.items.some(a=>a.kind==='weather'))loadWx();
+if(S.items.some(a=>a.kind==='weather')){loadWx();setTimeout(()=>{if(!WX)loadWx(true)},11000)}
 if(S.pass||S.lockStart)lockNow();
 </script>
+<style>
+.icon{box-shadow:0 2px 8px rgba(0,0,0,.28),inset 0 .5px 0 rgba(255,255,255,.3);transition:transform .35s cubic-bezier(.34,1.56,.64,1),filter .2s}
+.slot:active .icon{transform:scale(.9);transition-duration:.12s}
+.dock{background:rgba(255,255,255,.2);border:.5px solid rgba(255,255,255,.16);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.spill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:.5px solid rgba(255,255,255,.14);padding:7px 40px;font-weight:500;transition:transform .2s,opacity .25s}
+.spill:active{transform:scale(.95)}
+.dots:not(:empty){background:rgba(0,0,0,.22)}
+.dot{transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s}
+.dot.on{transform:scale(1.25)}
+.box{border-radius:28px;max-width:360px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.4);animation:xbox .34s cubic-bezier(.22,1,.36,1)}
+@keyframes xbox{from{transform:scale(.92) translateY(10px);opacity:0}}
+.ov{animation:fin .22s ease}
+.btn{border-radius:14px;padding:14px;font-size:16px;transition:transform .15s,filter .15s}
+.btn:active{transform:scale(.97);filter:brightness(.9)}
+.card{border-radius:18px}
+.view{transition:opacity .3s ease}
+.view h1{font-size:34px;font-weight:700}
+#home{transition:transform .55s cubic-bezier(.32,.72,0,1),filter .45s,opacity .38s}
+#fp{animation:fpop .4s cubic-bezier(.22,1,.36,1)}
+@keyframes fpop{from{transform:scale(.2);opacity:0}}
+@keyframes xfout{to{transform:scale(.2);opacity:0}}
+.w{border-radius:26px;background:rgba(36,36,42,.5);-webkit-backdrop-filter:blur(28px) saturate(170%);backdrop-filter:blur(28px) saturate(170%);border:.5px solid rgba(255,255,255,.16);box-shadow:0 6px 20px rgba(0,0,0,.22)}
+.w.wx,.w.k-photo{-webkit-backdrop-filter:none;backdrop-filter:none}
+.edit .w{-webkit-backdrop-filter:none;backdrop-filter:none;animation:xjig .3s infinite alternate ease-in-out}
+@keyframes xjig{from{transform:rotate(-.45deg)}to{transform:rotate(.45deg)}}
+.wb{padding:12px 14px}
+.xmid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.xbig{font-size:clamp(40px,12vw,58px);font-weight:300;line-height:1}
+.xtime{font-size:clamp(30px,9vw,44px);font-weight:300;line-height:1.05;font-variant-numeric:tabular-nums}
+.xsub{font-size:12px;font-weight:500;opacity:.8;line-height:1.3}
+.xc{text-align:center}
+.xdow{color:#ff453a;font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase}
+.xf{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.xf svg{height:100%;aspect-ratio:1;max-width:100%}
+.xr2{display:flex;align-items:center;justify-content:space-between;gap:10px;height:100%}
+.xr2 .xf{flex:none;height:100%}
+.xgw{flex:1;min-width:0}
+.xg7{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;line-height:1.75}
+.xgw.l .xg7{font-size:15px;line-height:2.4}
+.xg7 i{font-style:normal;border-radius:50%}
+.xg7 .xh{opacity:.55;font-size:.85em}
+.xg7 .xtd{background:#ff453a}
+.xbar{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border-radius:14px;padding:11px 14px;font-size:14px;opacity:.9}
+.xg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.xt2{border:0;border-radius:16px;padding:12px;color:#fff;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:62px;justify-content:flex-end;font-size:15px;transition:transform .15s}
+.xt2:active{transform:scale(.96)}
+.xt2 span{font-size:11px;opacity:.8}
+</style>
 </body>
 </html>
