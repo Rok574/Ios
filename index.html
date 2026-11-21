@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,14 +13,12 @@
   --sheet:#f2f2f7;
   --card:#ffffff;
   --ink:#111111;
-  --dim:#6e6e73;
-  --field:#e5e5ea;
+  --dim:#6b7280;
+  --field:#e9e9ee;
   --blue:#0a84ff;
   --red:#ff453a;
-  --green:#30d158;
-  --is:min(16vw,68px);
+  --is:min(16vw,66px);
   --tint:#0a84ff;
-  --r-icon:22.37%;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -43,36 +41,48 @@
   -webkit-tap-highlight-color:transparent;
   -webkit-user-select:none;
   user-select:none;
+  -webkit-touch-callout:none;
+}
+img,svg{
+  pointer-events:none;
+  -webkit-user-drag:none;
+  user-drag:none;
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  user-select:none;
 }
 html,body{
   height:100%;
   margin:0;
   overflow:hidden;
   overscroll-behavior:none;
+  touch-action:manipulation;
   background:#000;
   color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Roboto,"Helvetica Neue",sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Roboto,"Helvetica Neue",sans-serif;
 }
-button{font-family:inherit;cursor:pointer}
+button{font-family:inherit}
 input,select,textarea{-webkit-user-select:text;user-select:text;font-family:inherit}
-input[type=file]{-webkit-user-select:auto;user-select:auto}
+input[type=file]{-webkit-user-select:auto;user-select:auto;cursor:pointer}
 
-/* Wallpaper & Home */
 #wall{
   position:fixed;inset:0;
   transform:scale(1.04);
   transition:transform .5s cubic-bezier(.2,.8,.2,1);
 }
-#wall.away,#wall.opn{transform:scale(1.13)}
+#wall.away{transform:scale(1.16)}
+#wall.opn{transform:scale(1.12)}
+
 #home{
   position:fixed;inset:0;
   display:flex;flex-direction:column;
   color:#fff;
   padding-top:calc(env(safe-area-inset-top,0px) + 10px);
-  transition:transform .48s cubic-bezier(.32,.72,0,1),filter .42s,opacity .35s;
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px);
+  transition:transform .5s cubic-bezier(.32,.72,0,1),filter .42s,opacity .35s;
 }
-#home.away{transform:scale(1.1);filter:blur(5px)}
-#home.opn{transform:scale(1.1);opacity:0}
+#home.away{transform:scale(1.12);filter:blur(5px)}
+#home.opn{transform:scale(1.12);opacity:0}
 
 .edtop{
   display:flex;visibility:hidden;
@@ -81,16 +91,16 @@ input[type=file]{-webkit-user-select:auto;user-select:auto}
 }
 .edit .edtop{visibility:visible}
 .edtop button{
-  border:0;background:rgba(255,255,255,.24);color:#fff;
-  font-size:15px;font-weight:600;border-radius:18px;
-  padding:6px 14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:0;background:rgba(255,255,255,.25);color:#fff;
+  font-size:15px;font-weight:600;border-radius:16px;
+  padding:6px 14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
 }
 
 #pv{flex:1;min-height:0;overflow:hidden;touch-action:none;position:relative}
 #track{display:flex;height:100%;will-change:transform}
 .page{flex:0 0 100%;position:relative;height:100%}
 
-/* Slots & App Store style icons */
+/* Slots & App Store-style Icons */
 .slot{
   display:flex;flex-direction:column;align-items:center;gap:4px;
   position:relative;align-self:start;touch-action:none;
@@ -98,33 +108,33 @@ input[type=file]{-webkit-user-select:auto;user-select:auto}
 .page .slot.it{padding-top:2px}
 .icon{
   width:var(--is);height:var(--is);
-  border-radius:var(--r-icon);
+  border-radius:22.5%;
   display:flex;align-items:center;justify-content:center;
-  font-size:calc(var(--is)*.44);font-weight:700;color:#fff;
+  font-size:calc(var(--is)*.46);font-weight:700;color:#fff;
   overflow:hidden;position:relative;isolation:isolate;
-  box-shadow:0 4px 12px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.32);
-  transition:transform .16s cubic-bezier(.2,.8,.2,1),filter .16s;
+  box-shadow:0 3px 10px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.32);
+  transition:transform .15s,filter .15s;
 }
-/* Subtle App Store top specular sheen */
+/* Subtle App Store glossy top highlight */
 .icon::before{
   content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 48%);
   pointer-events:none;z-index:2;
 }
 .icon>svg{width:100%;height:100%;display:block;position:relative;z-index:1}
-.icon>img.app-art{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:1}
-.icon>img.fav-art{width:62%;height:62%;object-fit:contain;border-radius:16%;position:relative;z-index:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))}
-.slot:active .icon{transform:scale(.88);filter:brightness(.8)}
+.icon>img.full-ico{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:1}
+.icon>img.fav-ico{width:64%;height:64%;object-fit:contain;border-radius:18%;display:block;position:relative;z-index:1}
+.slot:active .icon{transform:scale(.88);filter:brightness(.78)}
 
 .cal{background:#fff;flex-direction:column;color:#111;line-height:1}
 .cal::before{display:none}
-.cal b{font-size:calc(var(--is)*.18);color:#ff3b30;letter-spacing:.4px;margin-top:calc(var(--is)*.11);z-index:1}
-.cal i{font-style:normal;font-size:calc(var(--is)*.52);font-weight:300;margin-top:-1px;z-index:1}
+.cal b{font-size:calc(var(--is)*.19);color:#ff3b30;letter-spacing:.3px;margin-top:3px;z-index:1}
+.cal i{font-style:normal;font-size:calc(var(--is)*.54);font-weight:300;margin-top:-1px;z-index:1}
 
-.st-dark .icon{filter:brightness(.62) contrast(1.06)}
-.st-tint .icon{background:linear-gradient(180deg,#34343a,#16161a)!important}
-.st-tint .icon>*:not(.tint-layer){filter:grayscale(1) contrast(1.25) brightness(1.32)}
-.st-tint .icon::after{
+.st-dark .icon{filter:brightness(.62) contrast(1.05)}
+.st-tint .icon:not(.fld-ico){background:linear-gradient(#34343a,#16161a)!important}
+.st-tint .icon:not(.fld-ico)>*{filter:grayscale(1) contrast(1.25) brightness(1.3)}
+.st-tint .icon:not(.fld-ico)::after{
   content:"";position:absolute;inset:0;
   background:var(--tint);mix-blend-mode:multiply;
   pointer-events:none;z-index:3;
@@ -132,84 +142,80 @@ input[type=file]{-webkit-user-select:auto;user-select:auto}
 .st-tint .cal{color:#fff}.st-tint .cal b{color:#fff}
 
 .label{
-  font-size:11px;font-weight:500;letter-spacing:.01em;
-  max-width:calc(var(--is) + 16px);
+  font-size:11px;font-weight:500;
+  max-width:calc(var(--is) + 14px);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   text-shadow:0 1px 3px rgba(0,0,0,.6);
 }
 .nolabels .label{display:none}
 
-.edit .slot,.edit .w{animation:jig .25s infinite alternate ease-in-out}
+.edit .slot,.edit .w{animation:jig .24s infinite alternate ease-in-out}
 .edit .slot:nth-child(2n){animation-delay:-.12s}
 .edit .it:nth-child(3n){animation-delay:-.08s}
 .edit .it:nth-child(3n+1){animation-delay:-.17s}
-@keyframes jig{from{transform:rotate(-1.3deg)}to{transform:rotate(1.3deg)}}
+@keyframes jig{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
 
 .del{
   display:none;position:absolute;
-  top:-5px;left:calc(50% - var(--is)/2 - 5px);
-  width:21px;height:21px;border-radius:50%;
-  background:rgba(142,142,147,.95);color:#fff;
-  font-size:16px;line-height:19px;text-align:center;
-  border:0;padding:0;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.35);
+  top:-6px;left:calc(50% - var(--is)/2 - 6px);
+  width:22px;height:22px;border-radius:50%;
+  background:#8e8e93;color:#fff;font-size:16px;line-height:21px;
+  text-align:center;border:0;padding:0;z-index:5;
+  box-shadow:0 2px 5px rgba(0,0,0,.35);
 }
 .edit .del.ok{display:block}
 
 /* Widgets */
 .w{
   margin:0;border-radius:24px;overflow:hidden;position:relative;
-  color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.3);
+  color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);
   background:#3a3a3c center/cover;touch-action:none;
 }
 .w .del{left:8px;top:8px}
 .sz{
   display:none;position:absolute;right:8px;bottom:8px;
-  background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:12px;
-  padding:5px 11px;font-size:11px;font-weight:700;z-index:5;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  background:rgba(0,0,0,.58);color:#fff;border:0;border-radius:12px;
+  padding:5px 12px;font-size:12px;font-weight:700;z-index:5;
 }
 .edit .sz{display:block}
-.wb{position:absolute;inset:0;padding:13px 14px;display:flex;flex-direction:column;justify-content:space-between}
+.wb{position:absolute;inset:0;padding:14px;display:flex;flex-direction:column;justify-content:space-between}
 .wh{display:flex;justify-content:space-between;align-items:flex-start}
-.wc{font-weight:600;font-size:14px;opacity:.95}
-.wt{font-size:40px;font-weight:300;line-height:1.05}
-.wd{font-size:12px;font-weight:500;line-height:1.3;opacity:.92}
+.wc{font-weight:600;font-size:15px}
+.wt{font-size:44px;font-weight:300;line-height:1.05}
+.wd{font-size:13px;font-weight:500;line-height:1.3}
 .wdays{display:none;gap:4px;justify-content:space-between}
-.wdays div{display:flex;flex-direction:column;align-items:center;font-size:11px;gap:3px;flex:1}
+.wdays div{display:flex;flex-direction:column;align-items:center;font-size:12px;gap:3px;flex:1}
 .m .wdays{display:flex}.m .wd{display:none}
-.l .wdays{display:flex;flex-direction:column;gap:7px}
-.l .wdays div{flex-direction:row;justify-content:space-between;font-size:14px}
-.l .wdays span:first-child{width:46px}
-.pht{margin:auto;font-size:13px;text-align:center;opacity:.85;padding:6px}
+.l .wdays{display:flex;flex-direction:column;gap:8px}
+.l .wdays div{flex-direction:row;justify-content:space-between;font-size:15px}
+.l .wdays span:first-child{width:50px}
+.pht{margin:auto;font-size:14px;text-align:center;opacity:.85}
 
-/* Page Dots, Search Pill, Dock, Home Indicator */
+/* Dots, Search Pill, Dock (NO Home Bar!) */
 .dots{
   display:flex;align-self:center;align-items:center;justify-content:center;
-  height:26px;min-height:0;margin:2px 0 6px;padding:0 12px;border-radius:13px;
+  gap:8px;height:28px;min-height:0;margin:2px 0 6px;padding:0 14px;border-radius:14px;
   flex:none;
 }
 .dots:not(:empty){
   background:rgba(0,0,0,.28);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
 }
-.dot{
-  width:7px;height:7px;border-radius:50%;border:0;padding:0;margin:0 3px;
-  background:rgba(255,255,255,.42);
-}
-.dot.on{background:#fff;transform:scale(1.15)}
+.dot{width:7px;height:7px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.4)}
+.dot.on{background:#fff}
 
 .spill{
   align-self:center;border:0;color:#fff;font-size:13px;font-weight:500;
-  padding:6px 36px;border-radius:16px;
-  background:rgba(255,255,255,.24);
+  padding:6px 40px;border-radius:16px;
+  background:rgba(255,255,255,.25);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   margin-bottom:10px;flex:none;
 }
 .dock{
-  margin:0 12px 6px;
-  padding:10px calc(5.3vw - 12px);
-  border-radius:32px;
-  background:rgba(255,255,255,.24);
+  margin:0 11px 4px;
+  padding:10px calc(5.3vw - 11px);
+  border-radius:34px;
+  background:rgba(255,255,255,.26);
   backdrop-filter:blur(26px) saturate(170%);
   -webkit-backdrop-filter:blur(26px) saturate(170%);
   display:grid;grid-template-columns:repeat(4,1fr);
@@ -218,29 +224,19 @@ input[type=file]{-webkit-user-select:auto;user-select:auto}
 }
 .dock .label{display:none}
 .dock:empty{background:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-.edit .dock:empty{outline:2px dashed rgba(255,255,255,.35);outline-offset:-2px}
+.edit .dock:empty{outline:2px dashed rgba(255,255,255,.3);outline-offset:-2px}
 
-/* Non-intrusive Home Bar / Indicator */
-.hi{
-  align-self:center;width:134px;height:5px;border-radius:3px;
-  background:rgba(255,255,255,.85);
-  margin-bottom:calc(env(safe-area-inset-bottom,0px) + 6px);
-  flex:none;pointer-events:none;
-}
-
-/* App Window & Non-intrusive Bottom Bar */
+/* App Window & Invisible Bottom Edge Swipe Zone (no visual home bar) */
 #win{
   position:fixed;display:none;overflow:hidden;z-index:50;
-  transition:all .48s cubic-bezier(.32,.72,0,1);
-  box-shadow:0 16px 48px rgba(0,0,0,.45);
+  transition:all .46s cubic-bezier(.32,.72,0,1);
 }
 .view{
   position:absolute;inset:0;
   background:var(--sheet);color:var(--ink);
-  opacity:0;transition:opacity .24s ease;
-  overflow-y:auto;
-  padding:calc(env(safe-area-inset-top,0px) + 22px) 20px calc(env(safe-area-inset-bottom,0px) + 56px);
-  touch-action:pan-y;
+  opacity:0;transition:opacity .22s;
+  overflow-y:auto;touch-action:pan-y;
+  padding:calc(env(safe-area-inset-top,0px) + 22px) 20px calc(env(safe-area-inset-bottom,0px) + 28px);
 }
 .view.show{opacity:1}
 .view h1{margin:6px 0 18px;font-size:32px;letter-spacing:-.5px}
@@ -260,21 +256,18 @@ input[type=range]{width:55%}
 .sw{
   appearance:none;-webkit-appearance:none;width:51px;height:31px;
   border-radius:16px;background:var(--field);position:relative;
-  transition:background .2s;flex:none;border:0;cursor:pointer;
+  transition:background .2s;flex:none;border:0;
 }
 .sw::after{
   content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;
   border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.3);
   transition:transform .2s;
 }
-.sw:checked{background:var(--green)}
-.sw:checked::after{transform:translateX(20px)}
-
+.sw:checked{background:#30d158}.sw:checked::after{transform:translateX(20px)}
 .wps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px}
 .wps button{
-  height:104px;border-radius:12px;border:3px solid transparent;
-  color:#fff;font-weight:600;font-size:12px;
-  text-shadow:0 1px 3px rgba(0,0,0,.6);
+  height:110px;border-radius:12px;border:3px solid transparent;
+  color:#fff;font-weight:600;font-size:12px;text-shadow:0 1px 3px rgba(0,0,0,.6);
   display:flex;align-items:flex-end;padding:6px;
 }
 .wps button.on,.sq.on{border-color:var(--blue)}
@@ -286,34 +279,25 @@ input[type=range]{width:55%}
   display:block;width:100%;border:0;border-radius:14px;padding:15px;
   font-size:17px;font-weight:600;background:var(--blue);color:#fff;margin-top:12px;
 }
-.btn.red{background:var(--red)}
-.btn.gray{background:var(--field);color:var(--ink)}
+.btn.red{background:var(--red)}.btn.gray{background:var(--field);color:var(--ink)}
 
-/* Slim home gesture bar at bottom of #win (never blocks screen content) */
+/* Invisible 16px bottom swipe-up gesture strip (no visual bar) */
 #bar{
-  position:fixed;left:0;right:0;
-  bottom:calc(env(safe-area-inset-bottom,0px) + 4px);
-  height:20px;z-index:65;touch-action:none;
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:opacity .2s;pointer-events:none;
+  position:absolute;left:0;right:0;bottom:0;
+  height:calc(env(safe-area-inset-bottom,0px) + 16px);
+  z-index:10;touch-action:none;
 }
-#bar.active{pointer-events:auto}
-#bar::after{
-  content:"";width:120px;height:4.5px;border-radius:3px;
-  background:currentColor;opacity:.45;
-  transition:transform .2s,opacity .2s;
-}
-#bar:hover::after{opacity:.75;transform:scaleX(1.06)}
 
-.hero{display:flex;flex-direction:column;align-items:center;margin-top:10vh;gap:12px;text-align:center}
-.hero .icon{--is:92px}
-.hero p{color:var(--dim);margin:0;font-size:14px;max-width:280px;line-height:1.4}
-.spin{
-  width:26px;height:26px;border:3px solid var(--field);
-  border-top-color:var(--blue);border-radius:50%;
-  animation:sp .8s linear infinite;margin-top:6px;
+/* Blank Website App Launch Splash */
+.blank-app{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:24px;text-align:center;
+  background:var(--sheet);color:var(--ink);
 }
-@keyframes sp{to{transform:rotate(360deg)}}
+.blank-app .icon{--is:86px}
+.blank-app .bname{font-size:20px;font-weight:600}
+.blank-app .bsub{font-size:14px;color:var(--dim)}
 
 .calc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
 .calc button{aspect-ratio:1;border-radius:50%;border:0;font-size:28px;background:#333;color:#fff}
@@ -326,7 +310,7 @@ input[type=range]{width:55%}
 .cg .h{color:var(--dim);font-size:12px}.cg .t{background:var(--red);color:#fff}
 textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1.45}
 
-/* Overlays, Lock Screen, Passcode, Folder, Customize */
+/* Overlays, Lock Screen, Passcode, Folder */
 .ov{
   position:fixed;inset:0;background:rgba(0,0,0,.55);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -347,14 +331,18 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
 #lbg{position:absolute;inset:0;z-index:-1}
 #lt{margin-top:calc(env(safe-area-inset-top,0px) + 84px);font-size:84px;font-weight:200;letter-spacing:-2px;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.25)}
 #ld{margin-top:8px;font-size:21px;font-weight:400;text-shadow:0 1px 4px rgba(0,0,0,.3)}
-#su{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:15px;font-weight:500;animation:bnc 2.2s ease-in-out infinite;pointer-events:none}
-#su i{width:134px;height:5px;border-radius:3px;background:#fff;margin-top:14px}
+#su{
+  position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-size:15px;font-weight:500;animation:bnc 2.2s ease-in-out infinite;
+  pointer-events:none;
+}
 @keyframes bnc{0%,60%,100%{transform:none}70%{transform:translateY(-9px)}80%{transform:none}90%{transform:translateY(-5px)}}
 
 #pad{
   position:fixed;inset:0;z-index:300;display:none;flex-direction:column;
   align-items:center;justify-content:center;color:#fff;
-  background:rgba(0,0,0,.38);backdrop-filter:blur(40px) saturate(150%);-webkit-backdrop-filter:blur(40px) saturate(150%);
+  background:rgba(0,0,0,.35);backdrop-filter:blur(40px) saturate(150%);-webkit-backdrop-filter:blur(40px) saturate(150%);
 }
 #pad.show{display:flex}
 #pt{font-size:19px;font-weight:500;margin-bottom:22px;text-align:center;padding:0 20px}
@@ -369,7 +357,7 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
 .keys .t{background:none;font-size:17px;font-weight:500}.keys .e{visibility:hidden}
 
 .ghost .del,.ghost .sz{display:none!important}
-.ghost{filter:drop-shadow(0 8px 16px rgba(0,0,0,.42))}
+.ghost{filter:drop-shadow(0 8px 14px rgba(0,0,0,.4))}
 .wtop{display:flex;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 10px 8px;background:var(--sheet)}
 .wtop input{flex:1;min-width:0;text-align:center;font-size:15px;padding:9px 12px}
 .wtop button{border:0;background:var(--field);color:var(--ink);border-radius:10px;width:38px;font-size:18px}
@@ -382,12 +370,19 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
 .pvw{display:flex;gap:12px;justify-content:center;padding:14px;background:#2a2a30;--is:50px}
 .hue{-webkit-appearance:none;appearance:none;height:16px;border-radius:8px;width:55%;padding:0}
 .hue::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-.f3{display:grid;grid-template-columns:repeat(3,1fr);gap:6%;padding:11%;width:100%;height:100%;align-content:center}
-.mi{aspect-ratio:1;border-radius:22%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;position:relative}
-.mi>svg,.mi>img{width:100%;height:100%;object-fit:cover}
+
+/* Folder mini-grid */
+.f3{display:grid;grid-template-columns:repeat(3,1fr);gap:6%;padding:11%;width:100%;height:100%;align-content:center;position:relative;z-index:1}
+.mi{
+  aspect-ratio:1;border-radius:22.5%;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:700;color:#fff;position:relative;
+}
+.mi>svg,.mi>img.full-ico{width:100%;height:100%;object-fit:cover;display:block}
+.mi>img.fav-ico{width:64%;height:64%;object-fit:contain;border-radius:18%;display:block}
 
 #fo{
-  position:fixed;inset:0;z-index:40;display:none;flex-direction:column;
+  position:fixed;inset:0;z-index:80;display:none;flex-direction:column;
   align-items:center;justify-content:center;background:rgba(0,0,0,.38);
   backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:#fff;
   animation:fin .2s;
@@ -395,12 +390,17 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
 @keyframes fin{from{opacity:0}}
 #fo input{background:none;color:#fff;font-size:26px;font-weight:600;text-align:center;border:0;margin-bottom:18px;outline:none;width:70%}
 #fo input:not([readonly]){border-bottom:1px solid rgba(255,255,255,.5)}
-#fp{width:min(88vw,360px);min-height:150px;border-radius:32px;background:rgba(255,255,255,.22);padding:22px 8px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px 0;align-content:start;animation:fpop .3s cubic-bezier(.32,.72,0,1)}
+#fp{
+  width:min(88vw,360px);min-height:150px;border-radius:32px;
+  background:rgba(255,255,255,.22);padding:22px 8px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px 0;
+  align-content:start;animation:fpop .3s cubic-bezier(.32,.72,0,1);
+}
 @keyframes fpop{from{transform:scale(.6);opacity:0}}
-.tgt .icon{transform:scale(1.16)!important;box-shadow:0 0 0 3px rgba(255,255,255,.7)}
+.tgt .icon{transform:scale(1.18)!important;box-shadow:0 0 0 3px rgba(255,255,255,.65)}
 
 #cs{
-  position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;
+  position:fixed;left:0;right:0;bottom:0;z-index:90;display:none;
   background:var(--card);color:var(--ink);border-radius:24px 24px 0 0;
   padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 14px);
   box-shadow:0 -6px 30px rgba(0,0,0,.4);animation:sup .3s cubic-bezier(.32,.72,0,1);
@@ -408,7 +408,7 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
 @keyframes sup{from{transform:translateY(100%)}}
 #cs .row{border:0}
 
-.lib{flex:0 0 100%;height:100%;overflow-y:auto;touch-action:pan-y;padding:8px 18px 28px;backdrop-filter:blur(28px) brightness(.8);-webkit-backdrop-filter:blur(28px) brightness(.8);--is:min(calc((100vw - 52px)/2*.39),70px)}
+.lib{flex:0 0 100%;height:100%;overflow-y:auto;touch-action:pan-y;padding:6px 18px 24px;backdrop-filter:blur(28px) brightness(.8);-webkit-backdrop-filter:blur(28px) brightness(.8);--is:min(calc((100vw - 52px)/2*.39),70px)}
 .lrow{display:flex;gap:10px;align-items:center;margin-bottom:18px}
 .lsb{flex:1;min-width:0;background:rgba(255,255,255,.25);color:#fff;border-radius:14px;padding:11px 14px;font-size:17px;border:0;outline:none}
 .lsb::placeholder{color:rgba(255,255,255,.7)}
@@ -422,27 +422,18 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
 .lr{display:flex;align-items:center;gap:14px;padding:8px 0;font-size:17px;--is:44px}
 #home.inlib .dock,#home.inlib .spill{opacity:0;pointer-events:none}
 .dock,.spill{transition:opacity .25s}
-.sa .hi,.sa #bar::after{display:none}
 </style>
 </head>
 <body>
 <div id="wall"></div>
 <div id="home">
-  <div class="edtop">
-    <button id="addb">＋</button>
-    <button id="cusb">Customize</button>
-    <button id="doneb">Done</button>
-  </div>
+  <div class="edtop"><button id="addb">＋</button><button id="cusb">Customize</button><button id="doneb">Done</button></div>
   <div id="pv"><div id="track"></div></div>
   <div class="dots" id="dots"></div>
   <button class="spill" id="spill">Search</button>
   <div class="dock" id="dock"></div>
-  <div class="hi"></div>
 </div>
-<div id="win">
-  <div class="view" id="view"></div>
-</div>
-<div id="bar"></div>
+<div id="win"><div class="view" id="view"></div><div id="bar"></div></div>
 <div class="ov" id="ov"><div class="box" id="ob"></div></div>
 <div id="lock">
   <div id="lbg"></div>
@@ -451,14 +442,9 @@ textarea{width:100%;height:60vh;resize:none;background:var(--card);line-height:1
   <div id="su">
     <svg width="24" height="12" viewBox="0 0 24 12" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-8 9 8"/></svg>
     <span>Swipe up to unlock</span>
-    <i></i>
   </div>
 </div>
-<div id="pad">
-  <div id="pt"></div>
-  <div id="pd"><i></i><i></i><i></i><i></i></div>
-  <div class="keys" id="keys"></div>
-</div>
+<div id="pad"><div id="pt"></div><div id="pd"><i></i><i></i><i></i><i></i></div><div class="keys" id="keys"></div></div>
 <input type="file" id="file" accept="image/*" style="position:fixed;left:-9999px;opacity:0">
 <input type="file" id="pfile" accept="image/*" style="position:fixed;left:-9999px;opacity:0">
 
@@ -476,7 +462,7 @@ const WP=[
 const TINTS=['#0a84ff','#ff375f','#30d158','#ff9f0a','#bf5af2','#ffffff'];
 const hue=s=>[...String(s||'app')].reduce((h,c)=>(h*31+c.charCodeAt(0))%360,7);
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-const mk=(name,url)=>({id:uid('a'),name,url,type:'url',hue:hue(name)});
+const mk=(name,url,icon)=>({id:uid('a'),name,url,icon:icon||'',type:'url',hue:hue(name)});
 const sys=(id,name,dock)=>({id,name,type:id,hue:210,dock:!!dock});
 const wd=(kind,size)=>({id:uid('w'),type:'widget',kind,size});
 
@@ -497,7 +483,15 @@ try{
   }
 }catch(e){}
 S=Object.assign(DEF(),S||{});
-if(!Array.isArray(S.items)||!S.items.length)S.items=[sys('safari','Safari',1),sys('settings','Settings',1)];
+if(!Array.isArray(S.items))S.items=[sys('safari','Safari',1),sys('settings','Settings',1)];
+
+/* Sanitize any corrupted folder items from prior sessions */
+S.items=S.items.filter(Boolean).map(a=>{
+  if(a.type==='folder'){
+    a.items=(Array.isArray(a.items)?a.items:[]).filter(x=>x&&x.type!=='folder'&&x.type!=='widget');
+  }
+  return a;
+}).filter(a=>a.type!=='folder'||a.items.length>0);
 
 let photo='';
 try{photo=localStorage.getItem('IOS_WP')||''}catch(e){}
@@ -505,70 +499,50 @@ const PH={};
 S.items.forEach(a=>{
   if(a.kind==='photo')try{PH[a.id]=localStorage.getItem('IOS_PW_'+a.id)||''}catch(e){}
 });
-
 const save=()=>{try{localStorage.setItem('IOS_HOME3',JSON.stringify(S))}catch(e){}};
 
 let page=0,editing=false,moved=false,lpFired=false,lp=null;
-let openRect=null,webOpenedAt=0,appOpenedAt=0,swInt=0,pickId=null,WX=null,WXERR=false;
-const iconCache=new Map();
+let openRect=null,pendingWeb=false,webLaunchTime=0,hiddenAt=0,swInt=0,pickId=null,WX=null,WXERR=false;
 
-const bg=a=>`linear-gradient(155deg,hsl(${a.hue??hue(a.name)} 82% 58%),hsl(${((a.hue??hue(a.name))+34)%360} 74% 38%))`;
+const bg=a=>`linear-gradient(155deg,hsl(${a.hue??hue(a.name)} 82% 58%),hsl(${((a.hue??hue(a.name))+32)%360} 72% 40%))`;
 const G=(b,s)=>({b,s});
 
-/* App Store-style polished vector icons */
+/* App Store-style vector icons */
 const ART={
   safari:G(
-    'linear-gradient(180deg,#48a8ff 0%,#146ee3 100%)',
+    'linear-gradient(180deg,#52aeff 0%,#0f66dc 100%)',
     `<svg viewBox="0 0 120 120">
       <defs>
-        <radialGradient id="safDial" cx="50%" cy="45%" r="55%">
+        <radialGradient id="sd" cx="50%" cy="45%" r="55%">
           <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="82%" stop-color="#e8f3ff"/>
-          <stop offset="100%" stop-color="#b6d8ff"/>
+          <stop offset="85%" stop-color="#e7f2ff"/>
+          <stop offset="100%" stop-color="#b8d9ff"/>
         </radialGradient>
-        <linearGradient id="nedRed" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ff5e52"/>
-          <stop offset="100%" stop-color="#d91f14"/>
-        </linearGradient>
-        <linearGradient id="nedWhite" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="100%" stop-color="#d2d6dc"/>
-        </linearGradient>
       </defs>
-      <circle cx="60" cy="60" r="46" fill="url(#safDial)" stroke="rgba(255,255,255,.7)" stroke-width="2"/>
-      <g stroke="#2979e6" stroke-width="2" stroke-linecap="round" opacity=".65">
+      <circle cx="60" cy="60" r="46" fill="url(#sd)" stroke="rgba(255,255,255,.75)" stroke-width="2"/>
+      <g stroke="#2979e6" stroke-width="2" stroke-linecap="round" opacity=".6">
         <line x1="60" y1="18" x2="60" y2="25"/><line x1="60" y1="95" x2="60" y2="102"/>
         <line x1="18" y1="60" x2="25" y2="60"/><line x1="95" y1="60" x2="102" y2="60"/>
       </g>
       <g transform="rotate(38 60 60)">
-        <polygon points="60,23 67,60 53,60" fill="url(#nedRed)"/>
-        <polygon points="60,97 67,60 53,60" fill="url(#nedWhite)"/>
+        <polygon points="60,22 67,60 53,60" fill="#ff3b30"/>
+        <polygon points="60,98 67,60 53,60" fill="#d1d5db"/>
         <circle cx="60" cy="60" r="4.5" fill="#3a3a3c"/>
       </g>
     </svg>`
   ),
   settings:G(
-    'linear-gradient(180deg,#9da3ac 0%,#585c63 100%)',
+    'linear-gradient(180deg,#a2a7b0 0%,#5c6068 100%)',
     `<svg viewBox="0 0 120 120">
-      <defs>
-        <linearGradient id="gearGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#f5f6f8"/>
-          <stop offset="100%" stop-color="#c7ccd4"/>
-        </linearGradient>
-      </defs>
-      <circle cx="60" cy="60" r="34" fill="none" stroke="url(#gearGrad)" stroke-width="14" stroke-dasharray="13.5 13.5"/>
-      <circle cx="60" cy="60" r="28" fill="url(#gearGrad)"/>
-      <circle cx="60" cy="60" r="12" fill="#5e626a"/>
+      <circle cx="60" cy="60" r="34" fill="none" stroke="#e5e7eb" stroke-width="14" stroke-dasharray="13.5 13.5"/>
+      <circle cx="60" cy="60" r="28" fill="#e5e7eb"/>
+      <circle cx="60" cy="60" r="12" fill="#5c6068"/>
     </svg>`
   ),
   clock:G(
-    'linear-gradient(180deg,#1c1c1e 0%,#09090b 100%)',
+    'linear-gradient(180deg,#1c1c1e 0%,#08080a 100%)',
     `<svg viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="45" fill="#ffffff"/>
-      <g stroke="#1c1c1e" stroke-width="2.5" stroke-linecap="round">
-        <line x1="60" y1="19" x2="60" y2="26"/><line x1="60" y1="94" x2="60" y2="101"/>
-        <line x1="19" y1="60" x2="26" y2="60"/><line x1="94" y1="60" x2="101" y2="60"/>
-      </g>
+      <circle cx="60" cy="60" r="45" fill="#fff"/>
       <line x1="60" y1="60" x2="60" y2="33" stroke="#111" stroke-width="4.5" stroke-linecap="round"/>
       <line x1="60" y1="60" x2="80" y2="71" stroke="#111" stroke-width="4" stroke-linecap="round"/>
       <line x1="60" y1="67" x2="60" y2="26" stroke="#ff9f0a" stroke-width="2.4" stroke-linecap="round"/>
@@ -578,19 +552,9 @@ const ART={
   notes:G(
     'linear-gradient(180deg,#ffffff 0%,#f5f5f7 100%)',
     `<svg viewBox="0 0 120 120">
-      <defs>
-        <linearGradient id="noteTop" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ffe64d"/>
-          <stop offset="100%" stop-color="#ffcc00"/>
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="120" height="34" fill="url(#noteTop)"/>
+      <rect width="120" height="34" fill="#ffd60a"/>
       <line x1="0" y1="34" x2="120" y2="34" stroke="#e5b800" stroke-width="2"/>
-      <g stroke="#d1d1d6" stroke-width="2.2">
-        <line x1="0" y1="56" x2="120" y2="56"/>
-        <line x1="0" y1="76" x2="120" y2="76"/>
-        <line x1="0" y1="96" x2="120" y2="96"/>
-      </g>
+      <path d="M0 56h120M0 76h120M0 96h120" stroke="#d1d1d6" stroke-width="2.2"/>
     </svg>`
   ),
   calc:G(
@@ -604,41 +568,110 @@ const ART={
   )
 };
 
-/* Multi-source App Store / Website icon getter */
-function resolveWebIcon(url, cb){
-  let host='';
-  try{host=new URL(url).hostname}catch(e){return}
-  if(!host)return;
-  if(iconCache.has(host)){const cached=iconCache.get(host);if(cached)cb(cached);return}
+/* App Store + Multi-Source Icon Getter (NO crossOrigin block!) */
+const appStoreArtCache=new Map();
+function fetchAppStoreArtwork(term, host, cb){
+  const key=(term||host||'').toLowerCase();
+  if(!key)return;
+  if(appStoreArtCache.has(key)){
+    const v=appStoreArtCache.get(key);
+    if(v)cb(v);
+    return;
+  }
+  const cleanHost=(host||'').replace(/^www\./,'').split('.')[0];
+  const query=encodeURIComponent(term||cleanHost);
+  fetch(`https://itunes.apple.com/search?term=${query}&entity=software&limit=5`)
+    .then(r=>r.json())
+    .then(data=>{
+      const list=data&&Array.isArray(data.results)?data.results:[];
+      const match=list.find(item=>{
+        const seller=(item.sellerUrl||'').toLowerCase();
+        const track=(item.trackName||'').toLowerCase();
+        return (cleanHost&&seller.includes(cleanHost))||(cleanHost&&track.includes(cleanHost))||(term&&track.includes(term.toLowerCase()));
+      })||list[0];
+      const art=match&&(match.artworkUrl512||match.artworkUrl100);
+      if(art){
+        const hiRes=art.replace(/100x100bb/,'256x256bb');
+        appStoreArtCache.set(key,hiRes);
+        cb(hiRes);
+      }else{
+        appStoreArtCache.set(key,null);
+      }
+    })
+    .catch(()=>{appStoreArtCache.set(key,null)});
+}
 
-  const candidates=[
+function attachWebIcon(container, a){
+  if(!a)return;
+  // If user specified a custom icon URL or uploaded image, load it directly
+  if(a.icon){
+    const im=new Image();
+    im.draggable=false;
+    im.onload=()=>{
+      if(!container.isConnected)return;
+      container.dataset.hasAppStore='1';
+      container.innerHTML='';
+      container.style.background='#1c1c1e';
+      im.className='full-ico';
+      container.appendChild(im);
+    };
+    im.src=a.icon;
+    return;
+  }
+  if(!a.url)return;
+  let host='';
+  try{host=new URL(a.url).hostname}catch(e){return}
+  if(!host)return;
+
+  // Step 1: Load crisp favicon / apple-touch-icon immediately WITHOUT crossOrigin restriction
+  const sources=[
     `https://www.google.com/s2/favicons?sz=256&domain=${encodeURIComponent(host)}`,
     `https://icons.duckduckgo.com/ip3/${encodeURIComponent(host)}.ico`,
     `https://${host}/apple-touch-icon.png`
   ];
   let idx=0;
-  const tryNext=()=>{
-    if(idx>=candidates.length){iconCache.set(host,null);return}
-    const src=candidates[idx++];
+  const tryFav=()=>{
+    if(idx>=sources.length)return;
+    const src=sources[idx++];
     const im=new Image();
-    im.crossOrigin='anonymous';
+    im.draggable=false;
     im.onload=()=>{
+      if(!container.isConnected||container.dataset.hasAppStore==='1')return;
       if(im.naturalWidth>=16){
-        iconCache.set(host,src);
-        cb(src);
+        container.innerHTML='';
+        container.style.background='#ffffff';
+        im.className='fav-ico';
+        container.appendChild(im);
       }else{
-        tryNext();
+        tryFav();
       }
     };
-    im.onerror=tryNext;
+    im.onerror=tryFav;
     im.src=src;
   };
-  tryNext();
+  tryFav();
+
+  // Step 2: Automatically upgrade to real App Store 512/256px full-bleed rounded icon if matching app exists
+  fetchAppStoreArtwork(a.name, host, artUrl=>{
+    if(!container.isConnected)return;
+    const im=new Image();
+    im.draggable=false;
+    im.onload=()=>{
+      if(!container.isConnected)return;
+      container.dataset.hasAppStore='1';
+      container.innerHTML='';
+      container.style.background='#1c1c1e';
+      im.className='full-ico';
+      container.appendChild(im);
+    };
+    im.src=artUrl;
+  });
 }
 
 function fillIcon(i,a){
   i.innerHTML='';
-  i.classList.remove('cal');
+  i.classList.remove('cal','fld-ico');
+  delete i.dataset.hasAppStore;
   i.style.background='';
   if(!a)return;
   if(a.type==='calendar'){
@@ -649,6 +682,7 @@ function fillIcon(i,a){
     return;
   }
   if(a.type==='folder'){
+    i.classList.add('fld-ico');
     i.style.background='rgba(255,255,255,.28)';
     i.style.backdropFilter='blur(14px)';
     const g=el('div','f3');
@@ -666,32 +700,19 @@ function fillIcon(i,a){
     i.innerHTML=r.s;
     return;
   }
-  // App Store-style fallback badge + real favicon/app icon lookup
   i.style.background=bg(a);
   const letter=el('span',0,(a.name||'?').trim()[0].toUpperCase());
   letter.style.position='relative';
   letter.style.zIndex='1';
   i.appendChild(letter);
-
-  if(a.url){
-    resolveWebIcon(a.url,src=>{
-      if(!i.isConnected)return;
-      i.innerHTML='';
-      i.style.background='#ffffff';
-      const im=document.createElement('img');
-      im.src=src;
-      im.alt=a.name||'';
-      im.className='fav-art';
-      i.appendChild(im);
-    });
-  }
+  attachWebIcon(i,a);
 }
 
 const allApps=()=>{
   const r=[];
   S.items.forEach(a=>{
-    if(a.type==='widget')return;
-    if(a.type==='folder')(a.items||[]).forEach(x=>r.push({a:x,cat:a.name}));
+    if(!a||a.type==='widget')return;
+    if(a.type==='folder')(a.items||[]).forEach(x=>{if(x)r.push({a:x,cat:a.name||'Folder'})});
     else r.push({a,cat:(a.type==='url')?'Websites':'Utilities'});
   });
   return r;
@@ -746,21 +767,21 @@ function libPage(){
   return pg;
 }
 
-/* Slot layout & drag-and-drop */
+/* Slot layout & grid placement */
 let M={cw:90,rh:100,rows:6,pad:8,is:64};
 const SZ={s:[2,2],m:[4,2],l:[4,4]};
 const dm=a=>a.type==='widget'?SZ[a.size||'s']:[1,1];
-const grid=()=>S.items.filter(a=>!a.dock);
+const grid=()=>S.items.filter(a=>a&&!a.dock);
 
 function metrics(){
   const pv=$('#pv');
   const W=pv.clientWidth||innerWidth;
-  const H=pv.clientHeight||(innerHeight-220);
+  const H=pv.clientHeight||(innerHeight-180);
   M.cw=Math.min(Math.max((W-W*.106)/4,56),110);
   M.pad=Math.max(6,(W-4*M.cw)/2);
-  M.is=Math.round(M.cw*(S.big?.78:.66));
+  M.is=Math.round(M.cw*(S.big?.786:.66));
   M.rh=S.big?Math.round(M.cw):Math.round(M.is+32);
-  M.rows=Math.max(3,Math.floor((H-6)/M.rh));
+  M.rows=Math.max(4,Math.floor((H-4)/M.rh));
   document.documentElement.style.setProperty('--is',M.is+'px');
 }
 
@@ -799,13 +820,13 @@ function render(){
   metrics();
   let ch=0;
   S.items.forEach(a=>{
-    if(!a.dock&&(a.p==null||a.c==null||a.r==null||!fits(a,a.p,a.c,a.r))){
+    if(a&&!a.dock&&(a.p==null||a.c==null||a.r==null||!fits(a,a.p,a.c,a.r))){
       autoPlace(a);ch=1;
     }
   });
   if(ch)save();
 
-  const dk=S.items.filter(a=>a.dock).slice(0,4);
+  const dk=S.items.filter(a=>a&&a.dock).slice(0,4);
   const n=pageCount();
   const lib=(!editing&&S.lib)?1:0;
   page=Math.max(0,Math.min(page,n-1+lib));
@@ -862,24 +883,35 @@ $('#spill').onclick=()=>{
   launch(saf,$('#spill'));
 };
 
-let P=null,drag=null,edgeT=0,sx=0,sy=0,sw=false,dx=0;
+let P=null,drag=null,edgeT=0,sx=0,sy=0,sw=false,dx=0,justDroppedAt=0;
+
 function bindTap(n,fn,a){
   n.dataset.id=a.id;
   n.addEventListener('pointerdown',e=>{
+    if(e.target.closest('.del,.sz'))return;
     moved=false;lpFired=false;clearTimeout(lp);
     P={a,x:e.clientX,y:e.clientY};
     lp=setTimeout(()=>{if(!moved&&!editing){lpFired=true;setEdit(true)}},450);
   });
-  n.addEventListener('click',()=>{
+  n.addEventListener('click',e=>{
+    if(e.target.closest('.del,.sz'))return;
+    if(Date.now()-justDroppedAt<300)return;
     if(lpFired||moved||(editing&&a.type!=='folder'))return;
     fn();
   });
 }
 
 const rm=a=>{
+  if(!a)return;
   if(a.type==='folder'){
     S.items=S.items.filter(x=>x!==a);
-    (a.items||[]).forEach(x=>{S.items.push(x);autoPlace(x)});
+    (a.items||[]).forEach(x=>{
+      if(x){
+        delete x.dock;
+        S.items.push(x);
+        autoPlace(x);
+      }
+    });
     save();render();return;
   }
   S.items=S.items.filter(x=>x!==a);
@@ -982,8 +1014,9 @@ function widget(a){
   return w;
 }
 
-/* Drag & drop on grid/dock */
+/* Grid & Dock Dragging (isolated from folder dragging) */
 $('#pv').addEventListener('pointerdown',e=>{
+  if(FP||FD)return;
   if(editing&&e.target.closest('.it'))return;
   sx=e.clientX;sy=e.clientY;sw=true;dx=0;moved=false;
 });
@@ -992,9 +1025,9 @@ function startDrag(a,e){
   const n=document.querySelector(`[data-id="${a.id}"]`);if(!n)return;
   const r=n.getBoundingClientRect(),g=n.cloneNode(true);
   g.classList.add('ghost');
-  g.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;z-index:60;pointer-events:none;animation:none;transform:scale(1.08);opacity:.96`;
+  g.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;z-index:60;pointer-events:none;animation:none;transform:scale(1.1);opacity:.96`;
   $('#home').appendChild(g);
-  drag={a,g,ox:e.clientX-r.left,oy:e.clientY-r.top};
+  drag={a,g,ox:e.clientX-r.left,oy:e.clientY-r.top,hov:null,hs:0};
   moved=true;n.style.opacity=0;
 }
 
@@ -1018,23 +1051,34 @@ function dragMove(e){
 }
 
 function endDrag(e){
-  const d=drag,a=d.a;drag=null;clearTimeout(edgeT);edgeT=0;d.g.remove();
+  const d=drag,a=d.a;
+  drag=null;clearTimeout(edgeT);edgeT=0;d.g.remove();
+  document.querySelectorAll('.tgt').forEach(n=>n.classList.remove('tgt'));
+  justDroppedAt=Date.now();
+
   const pv=$('#pv').getBoundingClientRect(),dk=$('#dock').getBoundingClientRect(),cx=e.clientX,cy=e.clientY;
-  if(cy>dk.top-10&&a.type!=='widget'&&(a.dock||S.items.filter(x=>x.dock).length<4)){
+  if(cy>dk.top-10&&a.type!=='widget'&&a.type!=='folder'&&(a.dock||S.items.filter(x=>x&&x.dock).length<4)){
     const col=Math.max(0,Math.min(3,Math.floor((cx-dk.left)/(dk.width/4))));
-    S.items=S.items.filter(x=>x!==a);a.dock=true;
-    const before=S.items.filter(x=>x.dock)[col];
+    S.items=S.items.filter(x=>x!==a);
+    a.dock=true;delete a.p;delete a.c;delete a.r;
+    const before=S.items.filter(x=>x&&x.dock)[col];
     S.items.splice(before?S.items.indexOf(before):S.items.length,0,a);
   }else{
     const gx=cx-d.ox-pv.left-M.pad+M.cw/2,gy=cy-d.oy-pv.top+M.rh/2;
     const tc=Math.floor(gx/M.cw),tr=Math.floor(gy/M.rh);
     const tg=(a.type==='widget'||a.type==='folder')?null:grid().find(b=>b!==a&&b.p===page&&b.type!=='widget'&&b.c===tc&&b.r===tr);
     if(tg&&d.hov===tg.id&&Date.now()-d.hs>260){
-      S.items=S.items.filter(x=>x!==a);delete a.dock;
-      if(tg.type==='folder')tg.items.push(a);
-      else{
+      S.items=S.items.filter(x=>x!==a);
+      delete a.dock;delete a.p;delete a.c;delete a.r;
+      if(tg.type==='folder'){
+        if(!Array.isArray(tg.items))tg.items=[];
+        tg.items.push(a);
+      }else{
+        const idx=S.items.indexOf(tg);
         const f={id:uid('f'),type:'folder',name:'Folder',items:[tg,a],p:tg.p,c:tg.c,r:tg.r};
-        S.items[S.items.indexOf(tg)]=f;
+        delete tg.dock;delete tg.p;delete tg.c;delete tg.r;
+        if(idx>=0)S.items[idx]=f;
+        else S.items.push(f);
       }
       save();render();return;
     }
@@ -1051,6 +1095,7 @@ function endDrag(e){
 }
 
 window.addEventListener('pointermove',e=>{
+  if(FP||FD)return;
   if(P&&editing&&!drag&&Math.hypot(e.clientX-P.x,e.clientY-P.y)>6){clearTimeout(lp);startDrag(P.a,e)}
   if(drag)return dragMove(e);
   if(!sw)return;dx=e.clientX-sx;
@@ -1063,6 +1108,7 @@ window.addEventListener('pointermove',e=>{
 });
 
 window.addEventListener('pointerup',e=>{
+  if(FP||FD)return;
   clearTimeout(lp);P=null;if(drag)return endDrag(e);
   if(!sw)return;sw=false;
   if(moved){
@@ -1079,68 +1125,240 @@ window.addEventListener('pointercancel',()=>{
 });
 
 document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+let lastTouchEnd=0;
+document.addEventListener('touchend',e=>{
+  const now=Date.now();
+  if(now-lastTouchEnd<=300&&!e.target.closest('input,textarea,select')){
+    e.preventDefault();
+  }
+  lastTouchEnd=now;
+},{passive:false});
 let LW=innerWidth;
 addEventListener('resize',()=>{if(innerWidth!==LW){LW=innerWidth;render()}});
 
-/* Folders */
+/* Folders (isolated state, smooth drag-out & unwrap) */
 let FP=null,FD=null,fOpen=null,FDT=0;
 function openFolder(f){
+  if(!f||!Array.isArray(f.items))return;
   let o=$('#fo');
   if(!o){
     o=el('div');o.id='fo';
     o.innerHTML='<input type="text" id="fn"><div id="fp"></div>';
     document.body.appendChild(o);
-    o.onclick=e=>{if(e.target===o){o.style.display='none';render()}};
+    o.onclick=e=>{if(e.target===o){o.style.display='none';fOpen=null;render()}};
   }
   fOpen=f;
-  const n=$('#fn');n.value=f.name;n.readOnly=!editing;
-  n.onchange=()=>{f.name=n.value.trim()||'Folder';save()};
+  const n=$('#fn');n.value=f.name||'Folder';n.readOnly=!editing;
+  n.onchange=()=>{f.name=n.value.trim()||'Folder';save();render()};
   const p=$('#fp');p.innerHTML='';
-  (f.items||[]).forEach(a=>{
+  f.items.forEach(a=>{
     const sl=el('div','slot'),ic=el('div','icon');fillIcon(ic,a);
     sl.append(ic,el('span','label',a.name));
-    sl.addEventListener('pointerdown',e=>{FP={a,x:e.clientX,y:e.clientY,s:sl}});
-    sl.addEventListener('click',()=>{
+    sl.addEventListener('pointerdown',e=>{
+      e.stopPropagation();
+      FP={a,x:e.clientX,y:e.clientY,s:sl};
+    });
+    sl.addEventListener('click',e=>{
+      e.stopPropagation();
       if(Date.now()-FDT<400)return;
       const fi=document.querySelector(`[data-id="${f.id}"] .icon`);
-      if(fi)openRect=fi.getBoundingClientRect();
-      o.style.display='none';
-      launch(a,ic);
+      o.style.display='none';fOpen=null;
+      launch(a,fi||ic);
     });
     p.appendChild(sl);
   });
   o.style.display='flex';
 }
 
-addEventListener('pointermove',e=>{
+window.addEventListener('pointermove',e=>{
   if(FP&&!FD&&Math.hypot(e.clientX-FP.x,e.clientY-FP.y)>8){
     const r=FP.s.getBoundingClientRect(),g=FP.s.cloneNode(true);
-    g.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;margin:0;z-index:60;pointer-events:none;transform:scale(1.1)`;
+    g.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;margin:0;z-index:95;pointer-events:none;transform:scale(1.1)`;
     $('#fo').appendChild(g);
     FD={a:FP.a,g,ox:FP.x-r.left,oy:FP.y-r.top};FP.s.style.opacity=0;
   }
   if(FD){FD.g.style.left=e.clientX-FD.ox+'px';FD.g.style.top=e.clientY-FD.oy+'px'}
 });
 
-addEventListener('pointerup',e=>{
+window.addEventListener('pointerup',e=>{
   if(!FD){FP=null;return}
   const d=FD,f=fOpen,a=d.a,pr=$('#fp').getBoundingClientRect();
   FD=null;FP=null;FDT=Date.now();d.g.remove();
+  if(!f){return}
   if(e.clientY>pr.top&&e.clientY<pr.bottom&&e.clientX>pr.left&&e.clientX<pr.right){openFolder(f);return}
-  f.items=f.items.filter(x=>x!==a);$('#fo').style.display='none';
+  f.items=f.items.filter(x=>x!==a);
+  $('#fo').style.display='none';fOpen=null;
   const pv=$('#pv').getBoundingClientRect();
   const c=Math.max(0,Math.min(3,Math.floor((e.clientX-pv.left-M.pad)/M.cw)));
   const r=Math.max(0,Math.min(M.rows-1,Math.floor((e.clientY-pv.top)/M.rh)));
+  delete a.dock;
   if(fits(a,page,c,r)){a.p=page;a.c=c;a.r=r}else autoPlace(a);
   S.items.push(a);
   if(f.items.length<2){
+    const fIdx=S.items.indexOf(f);
     S.items=S.items.filter(x=>x!==f);
-    f.items.forEach(x=>{x.p=f.p;x.c=f.c;x.r=f.r;if(!fits(x,x.p,x.c,x.r))autoPlace(x);S.items.push(x)});
+    f.items.forEach(x=>{
+      delete x.dock;
+      x.p=f.p;x.c=f.c;x.r=f.r;
+      if(!fits(x,x.p,x.c,x.r))autoPlace(x);
+      if(fIdx>=0)S.items.splice(fIdx,0,x);
+      else S.items.push(x);
+    });
   }
   save();render();
 });
 
-/* App launch animation -> window.open web view -> clean persistence */
+/* App Launch Animation -> window.open -> Auto Close Animation on Return */
+function openUrl(u){
+  let w=null;
+  try{w=window.open(u,'_blank')}catch(e){}
+  if(w){
+    try{w.opener=null}catch(e){}
+    pendingWeb=true;
+    webLaunchTime=Date.now();
+  }
+  return !!w;
+}
+
+function launch(a,src){
+  const r=src&&src.getBoundingClientRect?src.getBoundingClientRect():{left:innerWidth/2-32,top:innerHeight/2-32,width:64,height:64};
+  const w=$('#win'),v=$('#view');
+  openRect=r;
+  pendingWeb=false;
+
+  // Website apps open as a clean blank app shell first, play the open animation, then call window.open
+  if(a.type==='url'&&a.url&&!S.proxy){
+    v.innerHTML='';
+    v.style.cssText='padding:0;overflow:hidden;background:var(--sheet)';
+    const splash=el('div','blank-app');
+    const ic=el('div','icon');fillIcon(ic,a);
+    splash.append(ic,el('div','bname',a.name||'Web App'),el('div','bsub','Opening…'));
+    v.appendChild(splash);
+    v.scrollTop=0;
+    v.classList.remove('show');
+
+    Object.assign(w.style,{
+      display:'block',transition:'none',transform:'',
+      left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',
+      borderRadius:'22.5%',background:bg(a)
+    });
+    w.offsetWidth;
+    Object.assign(w.style,{
+      transition:'all .45s cubic-bezier(.32,.72,0,1)',
+      left:'0',top:'0',width:'100vw',height:'100%',borderRadius:'0'
+    });
+    $('#home').classList.add('opn');
+    $('#wall').classList.add('opn');
+    setTimeout(()=>v.classList.add('show'),120);
+
+    // Wait until app open animation completes, then open via window.open
+    setTimeout(()=>{
+      if(w.style.display!=='block')return;
+      const d=dest(a.url);
+      const ok=d?openUrl(d):false;
+      if(!ok){
+        // Fallback if popup was blocked by browser
+        splash.querySelector('.bsub').textContent='Tap below to open';
+        const btn=el('button','btn','Open '+a.name);
+        btn.style.maxWidth='240px';
+        btn.onclick=()=>{if(d)openUrl(d)};
+        splash.appendChild(btn);
+      }else{
+        splash.querySelector('.bsub').textContent='Return here to close';
+      }
+    },460);
+    return;
+  }
+
+  // Built-in apps & Safari
+  buildView(a,v);
+  v.scrollTop=0;
+  v.classList.remove('show');
+  Object.assign(w.style,{
+    display:'block',transition:'none',transform:'',
+    left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',
+    borderRadius:'22.5%',background:a.type==='calendar'?'#fff':ART[a.type]?ART[a.type].b:bg(a)
+  });
+  w.offsetWidth;
+  Object.assign(w.style,{
+    transition:'all .46s cubic-bezier(.32,.72,0,1)',
+    left:'0',top:'0',width:'100vw',height:'100%',borderRadius:'0'
+  });
+  $('#home').classList.add('opn');
+  $('#wall').classList.add('opn');
+  setTimeout(()=>v.classList.add('show'),150);
+}
+
+function closeApp(){
+  const w=$('#win');
+  if(w.style.display!=='block')return;
+  clearInterval(swInt);
+  pendingWeb=false;
+  $('#view').classList.remove('show');
+  const r=openRect||{left:innerWidth/2-32,top:innerHeight/2-32,width:64,height:64};
+  Object.assign(w.style,{
+    transition:'all .45s cubic-bezier(.32,.72,0,1)',
+    transform:'',
+    left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',
+    borderRadius:'22.5%'
+  });
+  $('#home').classList.remove('opn');
+  $('#wall').classList.remove('opn');
+  setTimeout(()=>{
+    if(!$('#home').classList.contains('opn')){
+      w.style.display='none';
+      $('#view').innerHTML='';
+    }
+  },430);
+}
+
+/* Invisible bottom edge swipe-up gesture to close any open app */
+(function(){
+  const b=$('#bar'),w=$('#win');let y0=0,on=false;
+  b.onpointerdown=e=>{y0=e.clientY;on=true;b.setPointerCapture(e.pointerId);w.style.transition='none'};
+  b.onpointermove=e=>{
+    if(!on)return;
+    const d=Math.max(0,y0-e.clientY);
+    w.style.transform=`translateY(${-d*.35}px) scale(${1-Math.min(d,300)/1000})`;
+    w.style.borderRadius=Math.min(d/3,40)+'px';
+  };
+  b.onpointerup=e=>{
+    if(!on)return;on=false;
+    const d=y0-e.clientY;
+    w.style.transition='all .45s cubic-bezier(.32,.72,0,1)';
+    if(d>50||Math.abs(d)<6)closeApp();
+    else{w.style.transform='';w.style.borderRadius='0'}
+  };
+  b.onpointercancel=()=>{on=false;w.style.transform='';w.style.borderRadius='0'};
+})();
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if($('#win').style.display==='block')closeApp();
+    else if(editing)setEdit(false);
+  }
+});
+
+/* Automatically trigger the app close animation when returning from window.open */
+function backFromWeb(){
+  if(document.visibilityState==='hidden'){
+    hiddenAt=Date.now();
+    return;
+  }
+  if(S.pass&&hiddenAt&&Date.now()-hiddenAt>120000)lockNow();
+  // Only close after the user actually left to the opened window (at least 400ms elapsed since window.open)
+  if(pendingWeb&&(Date.now()-webLaunchTime>400)){
+    pendingWeb=false;
+    setTimeout(closeApp,180);
+  }
+}
+document.addEventListener('visibilitychange',backFromWeb);
+window.addEventListener('pageshow',e=>{if(e.persisted)backFromWeb()});
+window.addEventListener('focus',()=>{if(pendingWeb&&document.visibilityState==='visible')backFromWeb()});
+
+/* Built-in App Views */
 const BLOCK=/(^|\.)(google\.com|youtube\.com|youtu\.be|github\.com|reddit\.com|facebook\.com|instagram\.com|x\.com|twitter\.com|linkedin\.com|netflix\.com|amazon\.com|discord\.com|tiktok\.com|twitch\.tv|spotify\.com|bing\.com|chatgpt\.com|claude\.ai)$/;
 const useWin=d=>{
   const m=S.openMode||'auto';
@@ -1158,129 +1376,11 @@ const dest=v=>{
   }[S.engine]||'https://html.duckduckgo.com/html/?q=')+encodeURIComponent(v);
 };
 
-function openExternalWindow(u){
-  let winRef=null;
-  try{winRef=window.open(u,'_blank','noopener,noreferrer')}catch(e){}
-  if(winRef){
-    try{winRef.opener=null}catch(e){}
-    webOpenedAt=Date.now();
-  }
-  return !!winRef;
-}
-
-function launch(a,src){
-  const r=src&&src.getBoundingClientRect?src.getBoundingClientRect():{left:innerWidth/2-32,top:innerHeight/2-32,width:64,height:64};
-  const w=$('#win'),v=$('#view'),hb=$('#bar');
-  openRect=r;
-  appOpenedAt=Date.now();
-
-  // Start as a clean blank app shell with the app's icon color during the open animation
-  v.innerHTML='';
-  v.classList.remove('show');
-  w.style.color='';
-  hb.style.color='#fff';
-
-  const startBg=a.type==='calendar'?'#fff':ART[a.type]?ART[a.type].b:bg(a);
-  Object.assign(w.style,{
-    display:'block',transition:'none',transform:'',
-    left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',
-    borderRadius:'22.37%',background:startBg
-  });
-  w.offsetWidth;
-
-  // Step 1: Run the app open animation to full screen
-  Object.assign(w.style,{
-    transition:'all .46s cubic-bezier(.32,.72,0,1)',
-    left:'0',top:'0',width:'100vw',height:'100%',borderRadius:'0'
-  });
-  $('#home').classList.add('opn');
-  $('#wall').classList.add('opn');
-  hb.style.opacity=0;
-  hb.classList.remove('active');
-
-  // Step 2: Once the app open animation finishes (~460ms), build view & trigger window.open for website apps
-  setTimeout(()=>{
-    if(w.style.display!=='block')return;
-    buildView(a,v);
-    v.scrollTop=0;
-    v.classList.add('show');
-    const isDarkBg=getComputedStyle(v).backgroundColor==='rgb(0, 0, 0)'||a.type==='calc';
-    hb.style.color=isDarkBg?'#fff':'var(--ink)';
-    hb.style.opacity=1;
-    hb.classList.add('active');
-  },460);
-}
-
-function closeApp(){
-  const w=$('#win'),hb=$('#bar');
-  if(w.style.display!=='block')return;
-  clearInterval(swInt);
-  webOpenedAt=0;
-  hb.style.opacity=0;
-  hb.classList.remove('active');
-  $('#view').classList.remove('show');
-  const r=openRect||{left:innerWidth/2-32,top:innerHeight/2-32,width:64,height:64};
-  Object.assign(w.style,{
-    transition:'all .44s cubic-bezier(.32,.72,0,1)',
-    transform:'',
-    left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',
-    borderRadius:'22.37%'
-  });
-  $('#home').classList.remove('opn');
-  $('#wall').classList.remove('opn');
-  setTimeout(()=>{
-    if(!$('#home').classList.contains('opn')){
-      w.style.display='none';
-      $('#view').innerHTML='';
-    }
-  },440);
-}
-
-/* Bottom gesture bar swipe/tap to return home */
-(function(){
-  const b=$('#bar'),w=$('#win');let y0=0,on=false;
-  b.onpointerdown=e=>{
-    y0=e.clientY;on=true;
-    b.setPointerCapture(e.pointerId);
-    w.style.transition='none';
-  };
-  b.onpointermove=e=>{
-    if(!on)return;
-    const d=Math.max(0,y0-e.clientY);
-    w.style.transform=`translateY(${-d*.35}px) scale(${1-Math.min(d,300)/1000})`;
-    w.style.borderRadius=Math.min(d/3,36)+'px';
-  };
-  b.onpointerup=e=>{
-    if(!on)return;on=false;
-    const d=y0-e.clientY;
-    w.style.transition='all .44s cubic-bezier(.32,.72,0,1)';
-    if(d>45||Math.abs(d)<8)closeApp();
-    else{w.style.transform='';w.style.borderRadius='0'}
-  };
-  b.onpointercancel=()=>{on=false;w.style.transform='';w.style.borderRadius='0'};
-})();
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    if($('#win').style.display==='block')closeApp();
-    else if(editing)setEdit(false);
-  }
-});
-
-/* Do NOT treat returning from a newly opened web window as an app close */
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&webOpenedAt&&(Date.now()-webOpenedAt<2500)){
-    // Keep the app view open when switching back from the opened window
-    if($('#win').style.display==='block')$('#view').classList.add('show');
-  }
-});
-
-/* App views */
 function buildView(a,v){
   v.innerHTML='';v.style.cssText='';clearInterval(swInt);
   const T=a.type;
   if(T==='settings')return settingsView(v);
-  if(T==='safari')return webView(v,a,true);
+  if(T==='safari')return webView(v,a);
   if(T==='calc'){
     let cur='0',acc=null,op=null,fresh=false;
     const f=(x,y,o)=>o=='+'?x+y:o=='−'?x-y:o=='×'?x*y:y?x/y:NaN;
@@ -1334,65 +1434,38 @@ function buildView(a,v){
     for(let i=1;i<=new Date(y,m+1,0).getDate();i++)g.appendChild(el('span',i===d.getDate()?'t':'',i));
     v.appendChild(g);return;
   }
-  webView(v,a,false);
+  webView(v,a);
 }
 
-function webView(v,a,isSafari){
-  v.style.cssText='padding:0 0 28px;overflow:hidden;display:flex;flex-direction:column';
+function webView(v,a){
+  v.style.cssText='padding:0 0 18px;overflow:hidden;display:flex;flex-direction:column';
   const top=el('div','wtop'),i=el('input'),wrap=el('div','wb2'),f=document.createElement('iframe'),ph=el('div','wph');
   i.type='text';i.placeholder='Search or enter website';i.setAttribute('inputmode','url');i.autocapitalize='off';i.autocomplete='off';
   let cur='';
-
-  const showWindowState=(title,u,autoOpen)=>{
-    ph.style.display='flex';ph.innerHTML='';
-    const ic=el('div','icon');ic.style.setProperty('--is','68px');fillIcon(ic,a);
-    ph.append(ic,el('b',0,title));
-    if(u){
-      const b=el('button','btn','Open in Window');
-      b.style.maxWidth='240px';
-      b.onclick=()=>openExternalWindow(u);
-      ph.appendChild(b);
-      if(autoOpen)openExternalWindow(u);
-    }
+  const showPh=(t,u)=>{
+    ph.style.display='flex';ph.innerHTML='';ph.append(el('b',0,t));
+    if(u){const b=el('button','btn','Open again');b.style.maxWidth='240px';b.onclick=()=>openUrl(u);ph.appendChild(b)}
   };
-
-  const go=(u,autoOpen=false)=>{
-    const d=dest(u);if(!d)return;
-    cur=d;i.value=d;
-    if(!isSafari&&!S.proxy){
-      // Website app: open via window.open after app animation completes, keeping app view active
-      f.src='about:blank';
-      let h=d;try{h=new URL(d).hostname}catch(e){}
-      showWindowState(a.name||h,d,autoOpen);
-      return;
-    }
+  const go=u=>{
+    const d=dest(u);if(!d)return;cur=d;i.value=d;
     if(!S.proxy&&useWin(d)){
       f.src='about:blank';
-      const ok=openExternalWindow(d);
+      const ok=openUrl(d);
       let h=d;try{h=new URL(d).hostname}catch(e){}
-      showWindowState(ok?'Opened '+h+' in a window':'Popup blocked',d,false);
+      showPh(ok?'Opened '+h+' in a window':'Popup blocked',d);
       return;
     }
-    f.src=S.proxy?S.proxy+encodeURIComponent(d):d;
-    ph.style.display='none';
+    f.src=S.proxy?S.proxy+encodeURIComponent(d):d;ph.style.display='none';
   };
-
-  i.onkeydown=e=>{if(e.key==='Enter'){i.blur();go(i.value,false)}};
-  i.onfocus=()=>i.select();
+  i.onkeydown=e=>{if(e.key==='Enter'){i.blur();go(i.value)}};i.onfocus=()=>i.select();
   const rl=el('button',0,'↻'),ex=el('button',0,'↗');
   rl.onclick=()=>{if(!cur)return;const u=f.src;f.src='about:blank';setTimeout(()=>f.src=u,40)};
-  ex.onclick=()=>{if(cur)openExternalWindow(cur)};
+  ex.onclick=()=>{if(cur)openUrl(cur)};
   top.append(i,rl,ex);
   f.setAttribute('allow','fullscreen; clipboard-write; geolocation');
-
-  if(isSafari){
-    ph.append(el('b',0,'Safari'),el('span',0,'Type a site or search above. Sites that block frames open in a new window automatically.'));
-  }else{
-    ph.append(el('b',0,a.name||'Web App'),el('span',0,'Opening website in a new window…'));
-  }
-  wrap.append(f,ph);
-  v.append(top,wrap);
-  if(a.url)go(a.url,!isSafari);
+  ph.append(el('b',0,'Safari'),el('span',0,'Type a site or search above. Sites that can’t load inside the app open in a browser window automatically.'));
+  wrap.append(f,ph);v.append(top,wrap);
+  if(a.url)go(a.url);
 }
 
 function settingsView(v){
@@ -1589,9 +1662,41 @@ function installMenu(){
 
 function addSite(){
   const b=$('#ob');b.innerHTML='';b.appendChild(el('h3',0,'Add Website'));
-  const n=el('input'),u=el('input');
-  n.type=u.type='text';n.placeholder='Name (auto if blank)';
+  const prevWrap=el('div');prevWrap.style.cssText='display:flex;align-items:center;gap:12px;margin:4px 0 6px';
+  const prevIc=el('div','icon');prevIc.style.cssText='--is:56px;flex:none';
+  const prevLbl=el('div');prevLbl.style.cssText='font-size:13px;color:var(--dim);line-height:1.35';
+  prevLbl.textContent='App Icon (auto-fetched from URL or custom)';
+  prevWrap.append(prevIc,prevLbl);
+
+  const n=el('input'),u=el('input'),icIn=el('input');
+  n.type=u.type=icIn.type='text';
+  n.placeholder='Name (auto if blank)';
   u.placeholder='URL (e.g. wikipedia.org)';u.setAttribute('inputmode','url');u.autocapitalize='off';u.autocomplete='off';
+  icIn.placeholder='App Icon URL (auto if blank)';icIn.setAttribute('inputmode','url');icIn.autocapitalize='off';icIn.autocomplete='off';
+
+  let customData='',deb=0;
+  const pickBtn=el('button','btn gray','Choose Icon Photo…');
+  pickBtn.style.cssText='margin-top:0;padding:11px;font-size:15px';
+  const fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.style.display='none';
+  pickBtn.onclick=()=>fi.click();
+  fi.onchange=e=>shrink(e,256,d=>{customData=d;icIn.value='Custom photo selected';updPrev()});
+
+  const updPrev=()=>{
+    let url=u.value.trim(),nm=n.value.trim();
+    if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
+    if(!nm&&url){
+      const d=url.replace(/^https?:\/\/(www\.)?/i,'').split('/')[0].split('.')[0].replace(/([a-z])([A-Z])/g,'$1 $2')||'App';
+      nm=d[0].toUpperCase()+d.slice(1);
+    }
+    const icVal=customData||(icIn.value.trim().startsWith('http')?icIn.value.trim():'');
+    fillIcon(prevIc,{type:'url',name:nm||'App',url,icon:icVal,hue:hue(nm||'App')});
+  };
+  updPrev();
+  u.oninput=n.oninput=icIn.oninput=()=>{
+    if(icIn.value!=='Custom photo selected')customData='';
+    clearTimeout(deb);deb=setTimeout(updPrev,260);
+  };
+
   const s=el('button','btn','Save'),c=el('button','btn gray','Cancel');c.style.marginTop='0';c.onclick=closeOv;
   s.onclick=()=>{
     let url=u.value.trim(),nm=n.value.trim();if(!url)return;
@@ -1600,9 +1705,10 @@ function addSite(){
       const d=url.replace(/^https?:\/\/(www\.)?/i,'').split('/')[0].split('.')[0].replace(/([a-z])([A-Z])/g,'$1 $2')||'Link';
       nm=d[0].toUpperCase()+d.slice(1);
     }
-    const a=mk(nm,url);S.items.push(a);autoPlace(a);page=a.p;save();closeOv();render();
+    const icVal=customData||icIn.value.trim();
+    const a=mk(nm,url,icVal);S.items.push(a);autoPlace(a);page=a.p;save();closeOv();render();
   };
-  b.append(n,u,s,c);
+  b.append(prevWrap,n,u,icIn,pickBtn,fi,s,c);
 }
 
 $('#addb').onclick=addMenu;
@@ -1650,7 +1756,7 @@ function custMenu(){
   draw();o.style.display='block';
 }
 
-/* Passcode & Lock screen */
+/* Passcode & Lock Screen */
 async function hash(c){
   try{
     const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ios:'+c));
@@ -1707,7 +1813,7 @@ function tryUnlock(){
 }
 (function(){
   const h=$('#home'),W=$('#wall');let y0=0,t0=0,dy=0,on=false;
-  const fx=k=>{h.style.transform=`scale(${1.1-.1*k})`;h.style.filter=`blur(${5*(1-k)}px)`;W.style.transform=`scale(${1.13-.09*k})`};
+  const fx=k=>{h.style.transform=`scale(${1.12-.12*k})`;h.style.filter=`blur(${5*(1-k)}px)`;W.style.transform=`scale(${1.16-.12*k})`};
   lk.onpointerdown=e=>{
     if($('#pad').classList.contains('show'))return;
     on=true;y0=e.clientY;t0=Date.now();dy=0;lk.setPointerCapture(e.pointerId);
@@ -1736,7 +1842,6 @@ function tryUnlock(){
 function tick(){
   const d=new Date(),o={hour:'numeric',minute:'2-digit',hour12:!S.h24};
   const tStr=d.toLocaleTimeString([],o).replace(/\s?[AP]M/i,'');
-  if($('#clock'))$('#clock').textContent=tStr;
   $('#lt').textContent=tStr;
   $('#ld').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
 }
@@ -1766,7 +1871,6 @@ setInterval(tick,10000);
 
 tick();render();
 if(S.items.some(a=>a.kind==='weather'))loadWx();
-if(navigator.standalone||matchMedia('(display-mode: standalone)').matches)document.documentElement.classList.add('sa');
 if(S.pass||S.lockStart)lockNow();
 </script>
 </body>
